@@ -42,7 +42,9 @@ services:
       db:
         # Sem isto, a API sobe antes do banco aceitar conexões.
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # --no-access-log: cada requisição já gera uma linha JSON "http.requisicao"
+    # (com request_id e duração), feita pelo nosso middleware.
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
 
 volumes:
   pgdata:

@@ -7,6 +7,11 @@ from app.api import v1
 from app.api.deps import DbSession
 from app.api.erros import registrar_handlers
 from app.core.config import settings
+from app.infra.logging_config import configurar_logging
+from app.infra.request_id import HEADER as HEADER_REQUEST_ID
+from app.infra.request_id import RequestIdMiddleware
+
+configurar_logging()
 
 app = FastAPI(
     title=settings.app_name,
@@ -24,8 +29,15 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", HEADER_REQUEST_ID],
+    # Sem expose_headers, o JavaScript do navegador NÃO consegue ler estes
+    # headers da resposta (o CORS esconde tudo que não é "simples").
+    expose_headers=["Location", HEADER_REQUEST_ID],
 )
+
+# Adicionado POR ÚLTIMO = o middleware MAIS EXTERNO: o request_id já existe
+# quando qualquer outra coisa (CORS, rotas, handlers) roda e loga.
+app.add_middleware(RequestIdMiddleware)
 
 app.include_router(v1.router)
 

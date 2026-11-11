@@ -16,6 +16,7 @@ têm try/except: a exceção de domínio sobe e um destes handlers responde.
 from http import HTTPStatus
 from typing import Any
 
+import structlog
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -33,6 +34,10 @@ from app.dominio.excecoes import (
     SalaInativa,
     VersaoDesatualizada,
 )
+from app.infra.request_id import HEADER as HEADER_REQUEST_ID
+from app.infra.request_id import request_id_atual
+
+log = structlog.get_logger()
 
 MEDIA_TYPE_PROBLEMA = "application/problem+json"
 
@@ -163,9 +168,20 @@ def tratar_http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
 
 def tratar_inesperado(request: Request, exc: Exception) -> JSONResponse:
     """500: o cliente recebe uma mensagem genérica, SEM stack trace (que
-    revelaria detalhes internos). O detalhe completo vai para o log."""
+    revelaria detalhes internos). O detalhe completo vai para o LOG, com o
+    request_id; o mesmo id volta para o cliente, que pode informá-lo ao suporte.
+
+    Este handler roda por fora dos middlewares (no ServerErrorMiddleware do
+    Starlette), por isso o header X-Request-ID é colocado aqui à mão.
+    """
+    request_id = request_id_atual()
+    log.error("erro.inesperado", caminho=request.url.path, exc_info=exc)
     return resposta_problema(
-        request, 500, "Erro interno inesperado. Tente novamente mais tarde."
+        request,
+        500,
+        "Erro interno inesperado. Tente novamente mais tarde.",
+        headers={HEADER_REQUEST_ID: request_id} if request_id else None,
+        request_id=request_id,
     )
 
 
