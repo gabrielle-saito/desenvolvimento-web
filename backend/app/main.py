@@ -6,6 +6,7 @@ from sqlalchemy import text
 from app.api import v1
 from app.api.deps import DbSession
 from app.api.erros import registrar_handlers
+from app.api.openapi import instalar_openapi
 from app.core.config import settings
 from app.infra.logging_config import configurar_logging
 from app.infra.request_id import HEADER as HEADER_REQUEST_ID
@@ -40,6 +41,7 @@ app.add_middleware(
 app.add_middleware(RequestIdMiddleware)
 
 app.include_router(v1.router)
+instalar_openapi(app)
 
 
 @app.get("/health", tags=["infra"])

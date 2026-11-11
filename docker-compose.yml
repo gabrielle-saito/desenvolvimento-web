@@ -1,5 +1,5 @@
-# AGROEMERGIA — ambiente de desenvolvimento
-# Sobe: PostgreSQL 16 + API FastAPI com hot reload.
+# Reserva de Salas — ambiente de desenvolvimento
+# Sobe: PostgreSQL 16 + API FastAPI com hot reload + site estático (web).
 # Uso: docker compose up --build
 
 services:
