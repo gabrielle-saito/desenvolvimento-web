@@ -31,6 +31,7 @@ from app.dominio.reservas import (
     garantir_sala_ativa,
     ha_sobreposicao,
     validar_periodo,
+    validar_periodo_de_consulta,
     verificar_versao,
 )
 
@@ -181,3 +182,12 @@ def test_admin_nao_pode_se_desativar_nem_se_rebaixar() -> None:
 def test_admin_pode_alterar_outro_usuario_e_a_si_mesmo_sem_se_rebaixar() -> None:
     validar_alteracao_do_proprio_admin(1, 2, novo_papel=Papel.COLABORADOR, novo_ativo=False)
     validar_alteracao_do_proprio_admin(1, 1, novo_papel=Papel.ADMIN, novo_ativo=True)
+
+
+# ------------------------------------------------------- período de consulta
+def test_periodo_de_consulta_aceita_passado_mas_nao_invertido_nem_longo() -> None:
+    validar_periodo_de_consulta(h(8) - timedelta(days=3), h(8))  # passado: ok
+    with pytest.raises(PeriodoInvalido, match="depois do início"):
+        validar_periodo_de_consulta(h(11), h(10))
+    with pytest.raises(PeriodoInvalido, match="31 dias"):
+        validar_periodo_de_consulta(h(10), h(10) + timedelta(days=32))

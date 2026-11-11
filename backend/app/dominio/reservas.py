@@ -83,3 +83,21 @@ def verificar_versao(versao_enviada: int, versao_atual: int) -> None:
     """Locking otimista: o cliente prova que alterou a versão que leu."""
     if versao_enviada != versao_atual:
         raise VersaoDesatualizada(versao_atual=versao_atual)
+
+
+# Janela máxima de uma CONSULTA (disponibilidade/agenda): evita que alguém
+# peça "todas as reservas dos próximos 10 anos" de uma vez.
+JANELA_MAXIMA_CONSULTA = timedelta(days=31)
+
+
+def validar_periodo_de_consulta(inicio: datetime, fim: datetime) -> None:
+    """Consulta pode olhar o passado (não é reserva), mas precisa de um
+    período coerente e limitado."""
+    _exigir_fuso("inicio", inicio)
+    _exigir_fuso("fim", fim)
+    if fim <= inicio:
+        raise PeriodoInvalido("O fim do período precisa ser depois do início.")
+    if fim - inicio > JANELA_MAXIMA_CONSULTA:
+        raise PeriodoInvalido(
+            f"Consulte no máximo {JANELA_MAXIMA_CONSULTA.days} dias de cada vez."
+        )

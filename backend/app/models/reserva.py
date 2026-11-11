@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
@@ -11,10 +12,14 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.dominio.enums import StatusReserva
+
+if TYPE_CHECKING:
+    from app.models.sala import Sala
+    from app.models.user import User
 
 
 class Reserva(Base):
@@ -73,6 +78,14 @@ class Reserva(Base):
     cancelado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelado_por_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", name="fk_reservas_cancelado_por_id_users")
+    )
+
+    # Relacionamentos só para LEITURA (a resposta mostra o nome da sala e de
+    # quem reservou). lazy="joined": vem no mesmo SELECT, sem consulta extra
+    # por linha (evita o problema N+1 na agenda).
+    sala: Mapped["Sala"] = relationship(lazy="joined", viewonly=True)
+    usuario: Mapped["User"] = relationship(
+        foreign_keys=[usuario_id], lazy="joined", viewonly=True
     )
 
     __mapper_args__ = {"version_id_col": versao}
