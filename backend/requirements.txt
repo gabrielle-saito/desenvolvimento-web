@@ -1,0 +1,16 @@
+# Versões fixadas: o mesmo requirements gera o mesmo ambiente em todas as máquinas
+# (determinismo também vale para o ambiente).
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+pydantic-settings==2.15.0
+
+# Banco de dados
+sqlalchemy==2.1.4
+psycopg[binary]==3.3.6
+alembic==1.20.0
+
+# Autenticação
+pyjwt==2.15.1               # gerar e validar JWT
+pwdlib[argon2]==0.3.1       # hash de senha com Argon2
+python-multipart==0.0.32    # o login OAuth2 recebe formulário, não JSON
+email-validator==2.3.0      # valida o tipo EmailStr do Pydantic

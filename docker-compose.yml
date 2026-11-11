@@ -1,0 +1,48 @@
+# AGROEMERGIA — ambiente de desenvolvimento
+# Sobe: PostgreSQL 16 + API FastAPI com hot reload.
+# Uso: docker compose up --build
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      # Valores vêm do arquivo .env na raiz (o Compose lê automaticamente).
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      # host:container — 5433 no host evita conflito com um PostgreSQL
+      # instalado localmente (que costuma ocupar a 5432).
+      - "5433:5432"
+    volumes:
+      # Volume nomeado: os dados sobrevivem a "docker compose down".
+      # Para apagar tudo: docker compose down -v
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # "$$" escapa o "$" para o Compose: a variável é lida DENTRO do container.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      # Dentro da rede do Compose, o banco se chama "db" e escuta na 5432.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # Necessário para o --reload detectar mudanças em Windows/WSL2 e macOS.
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Bind mount: o código do seu editor aparece dentro do container.
+      - ./backend:/app
+    depends_on:
+      db:
+        # Sem isto, a API sobe antes do banco aceitar conexões.
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:
