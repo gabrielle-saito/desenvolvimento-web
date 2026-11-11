@@ -45,6 +45,9 @@ CHAMADAS_DE_RELOGIO = {
     ("time", "time"),
 }
 
+# Testes puros: não precisam limpar o banco antes de cada caso.
+pytestmark = pytest.mark.sem_banco
+
 
 def _proibido(modulo: str) -> bool:
     return any(modulo == p or modulo.startswith(p + ".") for p in IMPORTS_PROIBIDOS)

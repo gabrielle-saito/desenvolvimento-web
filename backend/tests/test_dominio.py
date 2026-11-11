@@ -37,6 +37,9 @@ from app.dominio.reservas import (
 
 AGORA = datetime(2030, 3, 10, 9, 0, tzinfo=UTC)
 
+# Testes puros: não precisam limpar o banco antes de cada caso.
+pytestmark = pytest.mark.sem_banco
+
 
 def h(hora: int, minuto: int = 0) -> datetime:
     """Atalho: um horário no dia 10/03/2030 (UTC)."""
