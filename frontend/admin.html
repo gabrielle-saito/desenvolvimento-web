@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Administração · Reserva de Salas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/paginas/admin.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <a class="marca" href="agenda.html">Reserva de Salas</a>
+    <nav id="menu" aria-label="Menu principal"></nav>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <h1>Administração</h1>
+    <div id="avisos" aria-live="polite"></div>
+    <section aria-labelledby="titulo-salas">
+      <h2 id="titulo-salas">Salas</h2>
+      <form id="form-sala" class="cartao" novalidate>
+        <h3>Cadastrar sala</h3>
+        <div class="linha">
+          <div><label for="sala-nome">Nome</label><input id="sala-nome" name="nome" required maxlength="120"></div>
+          <div><label for="sala-capacidade">Capacidade</label><input id="sala-capacidade" name="capacidade" type="number" min="1" required inputmode="numeric"></div>
+          <div><label for="sala-localizacao">Localização</label><input id="sala-localizacao" name="localizacao" maxlength="200"></div>
+        </div>
+        <label for="sala-descricao">Descrição</label>
+        <input id="sala-descricao" name="descricao" maxlength="2000">
+        <div class="acoes"><button type="submit" class="primario">Cadastrar sala</button></div>
+      </form>
+      <div id="lista-salas"></div>
+    </section>
+    <section aria-labelledby="titulo-usuarios">
+      <h2 id="titulo-usuarios">Usuários</h2>
+      <form id="form-usuario" class="cartao" novalidate>
+        <h3>Cadastrar usuário</h3>
+        <div class="linha">
+          <div><label for="usuario-nome">Nome</label><input id="usuario-nome" name="nome" required maxlength="120"></div>
+          <div><label for="usuario-email">E-mail</label><input id="usuario-email" name="email" type="email" required autocomplete="off"></div>
+          <div><label for="usuario-senha">Senha inicial</label><input id="usuario-senha" name="senha" type="password" required minlength="8" autocomplete="new-password"></div>
+          <div>
+            <label for="usuario-papel">Papel</label>
+            <select id="usuario-papel" name="papel">
+              <option value="colaborador">Colaborador</option>
+              <option value="responsavel">Responsável</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="acoes"><button type="submit" class="primario">Cadastrar usuário</button></div>
+      </form>
+      <div id="lista-usuarios"></div>
+    </section>
+  </main>
+</body>
+</html>

@@ -120,8 +120,29 @@ _MENSAGENS = {
     "datetime_parsing": "Data/hora inválida. Use ISO 8601 com fuso horário.",
     "datetime_type": "Data/hora inválida. Use ISO 8601 com fuso horário.",
     "int_parsing": "Informe um número inteiro.",
+    "int_type": "Informe um número inteiro.",
+    "string_type": "Informe um texto.",
+    "bool_parsing": "Use true ou false.",
+    "bool_type": "Use true ou false.",
     "string_too_short": "Não pode ficar vazio.",
+    "string_too_long": "Texto longo demais.",
+    "greater_than": "Valor precisa ser maior que {gt}.",
+    "greater_than_equal": "Valor precisa ser no mínimo {ge}.",
+    "less_than_equal": "Valor precisa ser no máximo {le}.",
+    "enum": "Valor inválido. Opções: {expected}.",
+    "value_error": "{error}",
 }
+
+
+def _mensagem(erro: dict) -> str:
+    modelo = _MENSAGENS.get(erro.get("type", ""))
+    if modelo is None:
+        return erro.get("msg", "Valor inválido.")
+    try:
+        # Preenche {gt}, {expected}... com o contexto que o Pydantic manda.
+        return modelo.format(**erro.get("ctx", {}))
+    except (KeyError, IndexError):
+        return erro.get("msg", "Valor inválido.")
 
 
 def tratar_validacao(request: Request, exc: RequestValidationError) -> JSONResponse:
@@ -144,7 +165,7 @@ def tratar_validacao(request: Request, exc: RequestValidationError) -> JSONRespo
             {
                 "campo": ".".join(caminho) or local,
                 "local": local,
-                "mensagem": _MENSAGENS.get(e.get("type", ""), e.get("msg", "Valor inválido.")),
+                "mensagem": _mensagem(e),
             }
         )
     return resposta_problema(

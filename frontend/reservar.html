@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Consultar e reservar · Reserva de Salas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/paginas/reservar.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <a class="marca" href="agenda.html">Reserva de Salas</a>
+    <nav id="menu" aria-label="Menu principal"></nav>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <h1>Consultar e reservar</h1>
+    <form id="consulta" class="cartao" novalidate>
+      <div class="linha">
+        <div>
+          <label for="data">Data</label>
+          <input id="data" name="data" type="date" required>
+        </div>
+        <div>
+          <label for="inicio">Início</label>
+          <input id="inicio" name="inicio" type="time" required step="300" value="09:00">
+        </div>
+        <div>
+          <label for="fim">Fim</label>
+          <input id="fim" name="fim" type="time" required step="300" value="10:00">
+        </div>
+        <div>
+          <label for="capacidade">Pessoas (mínimo)</label>
+          <input id="capacidade" name="capacidade_minima" type="number" min="1" inputmode="numeric">
+        </div>
+      </div>
+      <label for="finalidade">Finalidade da reunião</label>
+      <input id="finalidade" name="finalidade" required maxlength="500" placeholder="Ex.: Planejamento da sprint">
+      <div class="acoes">
+        <button type="submit" class="primario">Ver salas livres</button>
+      </div>
+    </form>
+    <div id="avisos" aria-live="polite"></div>
+    <section id="resultado" aria-labelledby="titulo-resultado" hidden>
+      <h2 id="titulo-resultado">Salas no período</h2>
+      <div id="salas" class="grade-salas"></div>
+    </section>
+  </main>
+</body>
+</html>

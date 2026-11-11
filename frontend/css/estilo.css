@@ -1,0 +1,320 @@
+/* Reserva de Salas — estilo único, sem framework.
+   Acessibilidade: contraste AA nas cores de texto, foco sempre visível,
+   alvos de toque com pelo menos 44px, respeita "reduzir movimento". */
+
+:root {
+  --fundo: #f5f6f8;
+  --superficie: #ffffff;
+  --texto: #1c2430;
+  --discreto: #4f5b6b;
+  --borda: #cfd5dd;
+  --primaria: #1f5fbf;
+  --primaria-texto: #ffffff;
+  --primaria-escura: #174a96;
+  --sucesso: #1d6b3a;
+  --sucesso-fundo: #e5f4ea;
+  --erro: #a3261b;
+  --erro-fundo: #fbe9e7;
+  --info: #1f4f7a;
+  --info-fundo: #e6f0fa;
+  --foco: #f2a900;
+  --raio: 8px;
+  --sombra: 0 1px 2px rgb(0 0 0 / 8%);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #12161c;
+    --superficie: #1b2129;
+    --texto: #e7ebf0;
+    --discreto: #a9b4c2;
+    --borda: #343d49;
+    --primaria: #6aa3ff;
+    --primaria-texto: #0b1220;
+    --primaria-escura: #8db8ff;
+    --sucesso: #7fd49b;
+    --sucesso-fundo: #15301f;
+    --erro: #ff9b8f;
+    --erro-fundo: #3a1a17;
+    --info: #9cc7f0;
+    --info-fundo: #16283a;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 0.5rem; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.2rem; }
+h3 { font-size: 1.05rem; }
+section { margin-top: 2rem; }
+
+a { color: var(--primaria); }
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.pular {
+  position: absolute;
+  left: -9999px;
+}
+.pular:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  background: var(--superficie);
+  padding: 0.5rem 1rem;
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ topo e menu */
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+}
+.marca {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--texto);
+  text-decoration: none;
+}
+#menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+#menu ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#menu a {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--raio);
+  text-decoration: none;
+  color: var(--texto);
+}
+#menu a:hover { background: var(--fundo); }
+#menu a[aria-current="page"] {
+  background: var(--primaria);
+  color: var(--primaria-texto);
+}
+.usuario-logado { margin: 0; color: var(--discreto); }
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* ------------------------------------------------------------- formulários */
+label {
+  display: block;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+}
+input, select, button {
+  font: inherit;
+  min-height: 44px;
+}
+input, select {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto);
+}
+input[aria-invalid="true"], select[aria-invalid="true"] {
+  border-color: var(--erro);
+  border-width: 2px;
+}
+.erro-campo {
+  display: block;
+  color: var(--erro);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto);
+  cursor: pointer;
+}
+button:hover { border-color: var(--primaria); }
+button:disabled { opacity: 0.6; cursor: wait; }
+button.primario {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: var(--primaria-texto);
+  font-weight: 600;
+}
+button.primario:hover { background: var(--primaria-escura); }
+button.perigo { color: var(--erro); border-color: var(--erro); }
+button.largo { width: 100%; margin-top: 1.25rem; }
+.botao-link {
+  min-height: auto;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: none;
+  color: var(--primaria);
+  text-decoration: underline;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0 1rem;
+}
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+/* Célula de tabela continua "table-cell" (flex quebraria as bordas). */
+td.acoes { display: table-cell; margin: 0; white-space: nowrap; }
+td.acoes > * + * { margin-left: 0.5rem; }
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 1rem;
+  margin-bottom: 1rem;
+}
+.filtros > div { min-width: 160px; }
+
+/* ----------------------------------------------------------------- cartões */
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.grade-salas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.grade-salas .cartao { margin: 0; }
+.largura-total { grid-column: 1 / -1; }
+.sala-livre { border-left: 6px solid var(--sucesso); }
+.sala-ocupada { border-left: 6px solid var(--erro); }
+.livre { color: var(--sucesso); font-weight: 600; }
+.ocupada { color: var(--erro); font-weight: 600; margin-bottom: 0.25rem; }
+.horarios { list-style: none; padding: 0; margin: 0.5rem 0; }
+.horarios li { padding: 0.4rem 0; border-top: 1px solid var(--borda); }
+.horarios li:first-child { border-top: none; }
+
+.discreto { color: var(--discreto); }
+.bloco { display: block; font-size: 0.9rem; }
+.vazio { color: var(--discreto); font-style: italic; }
+.etiqueta {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.inativo { opacity: 0.75; }
+
+/* ----------------------------------------------------------------- avisos */
+.aviso {
+  padding: 0.75rem 1rem;
+  border-radius: var(--raio);
+  border-left: 6px solid currentColor;
+  margin: 0.75rem 0;
+}
+.aviso-sucesso { color: var(--sucesso); background: var(--sucesso-fundo); }
+.aviso-erro { color: var(--erro); background: var(--erro-fundo); }
+.aviso-info { color: var(--info); background: var(--info-fundo); }
+
+/* ----------------------------------------------------------------- tabelas */
+.tabela-rolavel { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+th { font-size: 0.9rem; color: var(--discreto); }
+td select { min-width: 140px; }
+
+.lista-admin { list-style: none; padding: 0; margin: 0; }
+.item-admin .linha { align-items: end; }
+
+/* ------------------------------------------------------------------ diálogo */
+dialog {
+  width: min(520px, calc(100vw - 2rem));
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto);
+  padding: 1.25rem;
+}
+dialog::backdrop { background: rgb(0 0 0 / 45%); }
+
+/* ------------------------------------------------------------------- login */
+.pagina-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+.cartao-login { width: min(400px, 100%); margin: 0; }
+
+/* -------------------------------------------------------------- responsivo */
+@media (max-width: 640px) {
+  h1 { font-size: 1.35rem; }
+  .topo { flex-direction: column; align-items: flex-start; }
+  .filtros > div { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}
