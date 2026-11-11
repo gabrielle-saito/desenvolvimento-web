@@ -16,7 +16,9 @@ config = context.config
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False: sem isto, rodar as migrations (ex.: nos
+    # testes) desligaria os loggers da aplicação que já tinham sido criados.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # A URL vem do ambiente (.env / docker compose), nunca do alembic.ini.
 config.set_main_option("sqlalchemy.url", settings.database_url)

@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 class UserCreate(BaseModel):
     email: EmailStr
+    nome: str = Field(min_length=1, max_length=120)
     # max_length também importa: hash de senhas gigantes custa CPU (negação de serviço).
     password: str = Field(min_length=8, max_length=128)
 
@@ -22,6 +23,8 @@ class UserRead(BaseModel):
 
     id: int
     email: EmailStr
+    nome: str
+    papel: str
     is_active: bool
     created_at: datetime
 

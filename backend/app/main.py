@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.api.deps import DbSession
-from app.api.routes import auth, items
+from app.api.routes import auth
 from app.core.config import settings
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
@@ -20,7 +20,6 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
-app.include_router(items.router)
 
 
 @app.get("/health", tags=["infra"])
