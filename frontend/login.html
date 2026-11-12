@@ -5,21 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
   <title>Entrar · Reserva de Salas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="css/estilo.css">
   <script type="module" src="js/paginas/login.js"></script>
 </head>
 <body class="pagina-login">
-  <main id="conteudo" class="cartao cartao-login">
-    <h1>Reserva de Salas</h1>
-    <p class="discreto">Entre com o e-mail e a senha da empresa.</p>
-    <div id="avisos" aria-live="polite"></div>
-    <form id="form-login" novalidate>
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" required autocomplete="username" autofocus>
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" required autocomplete="current-password">
-      <button type="submit" class="primario largo">Entrar</button>
-    </form>
+  <aside class="login-destaque">
+    <p class="login-marca">
+      <svg class="login-logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="8" fill="#7c4dff"/>
+        <rect x="8" y="9" width="11" height="3" rx="1.5" fill="#fff"/>
+        <rect x="11" y="14.5" width="13" height="3" rx="1.5" fill="#fff"/>
+        <rect x="8" y="20" width="9" height="3" rx="1.5" fill="#fff"/>
+      </svg>
+      Reserva de Salas
+    </p>
+    <div class="login-chamada">
+      <h2>Encontre uma sala livre e reserve em segundos.</h2>
+      <p>Veja a agenda de todas as salas da empresa e garanta o seu horário sem conflito com ninguém.</p>
+    </div>
+  </aside>
+
+  <main id="conteudo" class="login-painel">
+    <div class="login-form">
+      <h1>Entrar</h1>
+      <p class="discreto">Use o e-mail e a senha da empresa.</p>
+      <div id="avisos" aria-live="polite"></div>
+      <form id="form-login" novalidate>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required autocomplete="username"
+               placeholder="nome@empresa.com.br" autofocus>
+        <label for="senha">Senha</label>
+        <div class="campo-senha">
+          <input id="senha" name="senha" type="password" required autocomplete="current-password">
+          <button type="button" id="mostrar-senha" class="mostrar-senha"
+                  aria-controls="senha" aria-pressed="false">Mostrar</button>
+        </div>
+        <button type="submit" class="primario largo">Entrar</button>
+      </form>
+      <p class="login-ajuda">Esqueceu a senha? Peça ao administrador do sistema para redefinir.</p>
+    </div>
   </main>
 </body>
 </html>
