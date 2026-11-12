@@ -2,21 +2,26 @@
    Acessibilidade: contraste AA nas cores de texto, foco sempre visível,
    alvos de toque com pelo menos 44px, respeita "reduzir movimento". */
 
+/* Identidade: roxo e branco. Contraste do roxo sobre branco ≈ 8:1 (AA e AAA).
+   Verde (livre) e vermelho (ocupada/erro) continuam: carregam significado. */
 :root {
-  --fundo: #f5f6f8;
+  --fundo: #f7f4fd;
   --superficie: #ffffff;
-  --texto: #1c2430;
-  --discreto: #4f5b6b;
-  --borda: #cfd5dd;
-  --primaria: #1f5fbf;
+  --texto: #1f1530;
+  --discreto: #5b4e70;
+  --borda: #ddd3ee;
+  --primaria: #6b21a8;
   --primaria-texto: #ffffff;
-  --primaria-escura: #174a96;
+  --primaria-escura: #581c87;
+  --primaria-suave: #f1e8fb;
+  --topo-fundo: #6b21a8;
+  --topo-texto: #ffffff;
   --sucesso: #1d6b3a;
   --sucesso-fundo: #e5f4ea;
   --erro: #a3261b;
   --erro-fundo: #fbe9e7;
-  --info: #1f4f7a;
-  --info-fundo: #e6f0fa;
+  --info: #4c1d95;
+  --info-fundo: #f1e8fb;
   --foco: #f2a900;
   --raio: 8px;
   --sombra: 0 1px 2px rgb(0 0 0 / 8%);
@@ -25,20 +30,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fundo: #12161c;
-    --superficie: #1b2129;
-    --texto: #e7ebf0;
-    --discreto: #a9b4c2;
-    --borda: #343d49;
-    --primaria: #6aa3ff;
-    --primaria-texto: #0b1220;
-    --primaria-escura: #8db8ff;
+    --fundo: #150d22;
+    --superficie: #1f1530;
+    --texto: #f3eefb;
+    --discreto: #b9abd0;
+    --borda: #3b2c55;
+    --primaria: #c4a1f5;
+    --primaria-texto: #1f1530;
+    --primaria-escura: #d9c2fa;
+    --primaria-suave: #2c1d45;
+    --topo-fundo: #3b0f63;
+    --topo-texto: #ffffff;
     --sucesso: #7fd49b;
     --sucesso-fundo: #15301f;
     --erro: #ff9b8f;
     --erro-fundo: #3a1a17;
-    --info: #9cc7f0;
-    --info-fundo: #16283a;
+    --info: #d9c2fa;
+    --info-fundo: #2c1d45;
     color-scheme: dark;
   }
 }
@@ -96,13 +104,13 @@ a { color: var(--primaria); }
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
   padding: 0.75rem 1rem;
-  background: var(--superficie);
-  border-bottom: 1px solid var(--borda);
+  background: var(--topo-fundo);
+  color: var(--topo-texto);
 }
 .marca {
   font-weight: 700;
   font-size: 1.1rem;
-  color: var(--texto);
+  color: var(--topo-texto);
   text-decoration: none;
 }
 #menu {
@@ -124,14 +132,18 @@ a { color: var(--primaria); }
   padding: 0.5rem 0.75rem;
   border-radius: var(--raio);
   text-decoration: none;
-  color: var(--texto);
+  color: var(--topo-texto);
 }
-#menu a:hover { background: var(--fundo); }
+#menu a:hover { background: rgb(255 255 255 / 15%); }
+/* Página atual: "pílula" branca com texto roxo. */
 #menu a[aria-current="page"] {
-  background: var(--primaria);
-  color: var(--primaria-texto);
+  background: #ffffff;
+  color: #6b21a8;
+  font-weight: 600;
 }
-.usuario-logado { margin: 0; color: var(--discreto); }
+.usuario-logado { margin: 0; color: var(--topo-texto); }
+.topo .etiqueta { border-color: rgb(255 255 255 / 60%); }
+.topo .botao-link { color: var(--topo-texto); }
 
 main {
   max-width: 1100px;
@@ -305,8 +317,10 @@ dialog::backdrop { background: rgb(0 0 0 / 45%); }
   display: grid;
   place-items: center;
   padding: 1rem;
+  background: linear-gradient(160deg, #6b21a8 0%, #4c1d95 100%);
 }
-.cartao-login { width: min(400px, 100%); margin: 0; }
+.cartao-login { width: min(400px, 100%); margin: 0; border: none; box-shadow: 0 10px 30px rgb(0 0 0 / 25%); }
+.cartao-login h1 { color: var(--primaria); }
 
 /* -------------------------------------------------------------- responsivo */
 @media (max-width: 640px) {
@@ -318,3 +332,7 @@ dialog::backdrop { background: rgb(0 0 0 / 45%); }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* ------------------------------------------------------- toques de roxo */
+.cartao.sala h2, .cartao.sala h3, section > h2 { color: var(--primaria); }
+th { background: var(--primaria-suave); }

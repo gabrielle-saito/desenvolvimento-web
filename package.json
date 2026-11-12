@@ -1,0 +1,16 @@
+{
+  "name": "reserva-de-salas",
+  "private": true,
+  "description": "Atalhos npm para os comandos do Docker Compose. Não há dependências Node: tudo roda nos containers.",
+  "scripts": {
+    "predev": "node -e \"require('fs').existsSync('.env') || (console.error('Falta o .env. Rode: cp .env.example .env (e edite a SECRET_KEY)'), process.exit(1))\"",
+    "dev": "docker compose up --build",
+    "setup": "npm run migrate && npm run seed",
+    "migrate": "docker compose exec api alembic upgrade head",
+    "seed": "docker compose exec api python -m app.scripts.seed",
+    "test": "docker compose exec api pytest",
+    "logs": "docker compose logs -f api",
+    "down": "docker compose down",
+    "openapi": "docker compose exec -T api python -m app.scripts.exportar_openapi > contrato/openapi.json"
+  }
+}
