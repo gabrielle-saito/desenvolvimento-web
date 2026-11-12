@@ -5,6 +5,19 @@ import { salvarSessao } from "../sessao.js";
 const form = document.getElementById("form-login");
 const avisos = document.getElementById("avisos");
 
+// Botão "Mostrar"/"Ocultar" da senha.
+const campoSenha = document.getElementById("senha");
+const mostrarSenha = document.getElementById("mostrar-senha");
+// No clique do mouse, o foco fica no campo de senha (sem isso o foco pula
+// para o botão e volta, e a borda do campo "pisca").
+mostrarSenha.addEventListener("mousedown", (evento) => evento.preventDefault());
+mostrarSenha.addEventListener("click", () => {
+  const visivel = campoSenha.type === "password";
+  campoSenha.type = visivel ? "text" : "password";
+  mostrarSenha.textContent = visivel ? "Ocultar" : "Mostrar";
+  mostrarSenha.setAttribute("aria-pressed", String(visivel));
+});
+
 if (new URLSearchParams(window.location.search).has("expirou")) {
   avisar(avisos, "Sua sessão expirou. Entre novamente.", "info");
 }
@@ -22,7 +35,7 @@ form.addEventListener("submit", async (evento) => {
     return;
   }
 
-  const botao = form.querySelector("button");
+  const botao = form.querySelector('button[type="submit"]');
   botao.disabled = true;
   try {
     const { access_token: token } = await api.login(email, senha);
