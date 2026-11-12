@@ -14,3 +14,10 @@ pyjwt==2.15.1               # gerar e validar JWT
 pwdlib[argon2]==0.3.1       # hash de senha com Argon2
 python-multipart==0.0.32    # o login OAuth2 recebe formulário, não JSON
 email-validator==2.3.0      # valida o tipo EmailStr do Pydantic
+
+# Observabilidade (logs estruturados em JSON)
+structlog==26.1.0
+
+# Testes
+pytest==9.2.0
+httpx==0.28.1               # usado pelo TestClient do FastAPI

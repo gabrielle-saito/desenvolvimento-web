@@ -1,5 +1,5 @@
-# AGROEMERGIA — ambiente de desenvolvimento
-# Sobe: PostgreSQL 16 + API FastAPI com hot reload.
+# Reserva de Salas — ambiente de desenvolvimento
+# Sobe: PostgreSQL 16 + API FastAPI com hot reload + site estático (web).
 # Uso: docker compose up --build
 
 services:
@@ -42,7 +42,24 @@ services:
       db:
         # Sem isto, a API sobe antes do banco aceitar conexões.
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # --no-access-log: cada requisição já gera uma linha JSON "http.requisicao"
+    # (com request_id e duração), feita pelo nosso middleware.
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
+
+  web:
+    # Front-end estático (HTML + CSS + JS puro, sem build). Um servidor de
+    # arquivos basta: toda a lógica de negócio está na API.
+    image: python:3.12-slim
+    working_dir: /srv
+    volumes:
+      # Somente leitura: o container só serve os arquivos.
+      - ./frontend:/srv:ro
+    ports:
+      # 5173 é a origem liberada em CORS_ORIGINS no .env.
+      - "5173:5173"
+    command: python -m http.server 5173 --bind 0.0.0.0
+    depends_on:
+      - api
 
 volumes:
   pgdata:

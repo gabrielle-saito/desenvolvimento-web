@@ -3,11 +3,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
+from app.api import v1
 from app.api.deps import DbSession
-from app.api.routes import auth, items
+from app.api.erros import registrar_handlers
+from app.api.openapi import instalar_openapi
 from app.core.config import settings
+from app.infra.logging_config import configurar_logging
+from app.infra.request_id import HEADER as HEADER_REQUEST_ID
+from app.infra.request_id import RequestIdMiddleware
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+configurar_logging()
+
+app = FastAPI(
+    title=settings.app_name,
+    version="1.0.0",
+    description="Sistema web de reserva de salas da empresa (monolito modular).",
+)
+
+# Erros em Problem Details (RFC 9457): um handler por família de exceção.
+registrar_handlers(app)
 
 # CORS restrito: lista explícita de origens, nunca "*" junto com credenciais.
 # Lembre: CORS protege o USUÁRIO no navegador; não impede curl nem Postman.
@@ -15,12 +29,19 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["GET", "POST", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", HEADER_REQUEST_ID],
+    # Sem expose_headers, o JavaScript do navegador NÃO consegue ler estes
+    # headers da resposta (o CORS esconde tudo que não é "simples").
+    expose_headers=["Location", HEADER_REQUEST_ID],
 )
 
-app.include_router(auth.router)
-app.include_router(items.router)
+# Adicionado POR ÚLTIMO = o middleware MAIS EXTERNO: o request_id já existe
+# quando qualquer outra coisa (CORS, rotas, handlers) roda e loga.
+app.add_middleware(RequestIdMiddleware)
+
+app.include_router(v1.router)
+instalar_openapi(app)
 
 
 @app.get("/health", tags=["infra"])

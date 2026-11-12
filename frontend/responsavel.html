@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Gerenciar reservas · Reserva de Salas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/paginas/responsavel.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <a class="marca" href="agenda.html">Reserva de Salas</a>
+    <nav id="menu" aria-label="Menu principal"></nav>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <h1>Gerenciar reservas</h1>
+    <p class="discreto">Área do responsável pelas salas: consulte, altere ou cancele qualquer reserva.</p>
+    <form id="filtro" class="filtros">
+      <div>
+        <label for="de">De</label>
+        <input id="de" name="de" type="date" required>
+      </div>
+      <div>
+        <label for="ate">Até (inclusive)</label>
+        <input id="ate" name="ate" type="date" required>
+      </div>
+      <div>
+        <label for="sala">Sala</label>
+        <select id="sala" name="sala_id"><option value="">Todas</option></select>
+      </div>
+      <div class="acoes"><button type="submit" class="primario">Filtrar</button></div>
+    </form>
+    <div id="avisos" aria-live="polite"></div>
+    <div id="lista"></div>
+  </main>
+</body>
+</html>

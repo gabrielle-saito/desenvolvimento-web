@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Agenda · Reserva de Salas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/paginas/agenda.js"></script>
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <a class="marca" href="agenda.html">Reserva de Salas</a>
+    <nav id="menu" aria-label="Menu principal"></nav>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <h1>Agenda</h1>
+    <form id="filtro" class="filtros" aria-label="Escolher data">
+      <div>
+        <label for="dia">Data</label>
+        <input id="dia" name="dia" type="date" required>
+      </div>
+      <div class="acoes">
+        <button type="button" id="anterior" aria-label="Dia anterior">◀</button>
+        <button type="button" id="hoje">Hoje</button>
+        <button type="button" id="proximo" aria-label="Próximo dia">▶</button>
+      </div>
+    </form>
+    <p class="discreto" id="atualizado" aria-live="polite"></p>
+    <div id="avisos" aria-live="polite"></div>
+    <div id="agenda" class="grade-salas"></div>
+  </main>
+</body>
+</html>

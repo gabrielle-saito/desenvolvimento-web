@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Entrar · Reserva de Salas</title>
+  <link rel="stylesheet" href="css/estilo.css">
+  <script type="module" src="js/paginas/login.js"></script>
+</head>
+<body class="pagina-login">
+  <main id="conteudo" class="cartao cartao-login">
+    <h1>Reserva de Salas</h1>
+    <p class="discreto">Entre com o e-mail e a senha da empresa.</p>
+    <div id="avisos" aria-live="polite"></div>
+    <form id="form-login" novalidate>
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" required autocomplete="username" autofocus>
+      <label for="senha">Senha</label>
+      <input id="senha" name="senha" type="password" required autocomplete="current-password">
+      <button type="submit" class="primario largo">Entrar</button>
+    </form>
+  </main>
+</body>
+</html>
