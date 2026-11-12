@@ -57,6 +57,20 @@ Pronto:
 | API (Swagger) | <http://localhost:8000/docs> |
 | Health check | <http://localhost:8000/health> |
 
+### Atalhos com npm (opcional)
+
+Quem preferir o `npm` pode usar os atalhos do `package.json`. Eles só chamam o
+Docker Compose, então não há `npm install` nem dependências Node.
+
+| Comando | Equivale a |
+| --- | --- |
+| `npm run dev` | `docker compose up --build` (fica no terminal mostrando os logs; Ctrl+C para) |
+| `npm run setup` | migrations + seed (rode em outro terminal, na primeira vez) |
+| `npm test` | `docker compose exec api pytest` |
+| `npm run logs` | logs da API |
+| `npm run down` | derruba os containers (mantém os dados) |
+| `npm run openapi` | regera `contrato/openapi.json` |
+
 ### Usuários criados pelo seed
 
 O seed é idempotente: pode rodar de novo sem duplicar nada.
