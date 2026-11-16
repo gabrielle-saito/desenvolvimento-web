@@ -1,0 +1,94 @@
+# Integração contínua: a cada push na main e a cada pull request, o GitHub
+# roda os testes da API (com um PostgreSQL de verdade) e confere se o
+# front-end compila. O resultado aparece como ✅/❌ no commit e no PR.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: # botão "Run workflow" na aba Actions
+
+# Um push novo no mesmo branch cancela a execução anterior (economiza tempo).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: API (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Banco só para o CI: nasce vazio e é apagado no fim. Mesma versão do
+    # docker-compose.yml. "trust" = sem senha: não há segredo para guardar.
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: reserva_salas
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      # Os testes usam o banco "<nome>_test", criado e migrado pelo próprio
+      # conftest.py (com as migrations do Alembic, as mesmas da produção).
+      DATABASE_URL: postgresql+psycopg://postgres@localhost:5432/reserva_salas
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12" # a mesma do backend/Dockerfile
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      # Chave aleatória gerada a cada execução: nenhum segredo no repositório.
+      - name: Gerar SECRET_KEY temporária
+        run: echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_urlsafe(48))')" >> "$GITHUB_ENV"
+
+      - name: Rodar os testes
+        run: pytest
+
+  frontend:
+    name: Front-end (build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # a mesma do serviço web do docker-compose.yml
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci: instala exatamente as versões do package-lock.json.
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund
+
+      - name: Compilar (vite build)
+        run: npm run build

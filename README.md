@@ -1,5 +1,7 @@
 # Reserva de Salas
 
+[![CI](https://github.com/gabrielle-saito/desenvolvimento-web/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielle-saito/desenvolvimento-web/actions/workflows/ci.yml)
+
 Sistema web de **reserva de salas de reunião** de uma empresa. Ele substitui a planilha Excel
 que causava conflitos de horário, informação desatualizada e dificuldade de ver a
 disponibilidade.
@@ -108,6 +110,20 @@ Alembic automaticamente. O banco de desenvolvimento nunca é tocado.
 | `tests/test_api_admin.py` | RBAC das rotas de admin (403/401), salas, usuários, login, Problem Details, request_id, 500 sem stack trace |
 | `tests/test_api_catalogo.py` | recursos (CRUD, 409, desativar), sala ↔ recurso (N:N), busca/filtros/paginação com `X-Total-Count`, cadastro público, exemplos no Swagger |
 | `tests/test_concorrencia.py` | 2 e 10 requisições **simultâneas** → exatamente uma 201; edições simultâneas → só uma vence |
+
+### Integração contínua (GitHub Actions)
+
+A cada push na `main` e a cada pull request, o workflow
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda dois jobs:
+
+| Job | O que faz |
+| --- | --- |
+| **API (pytest)** | sobe um PostgreSQL 16 temporário, instala o `requirements.txt` e roda todos os testes (as migrations do Alembic incluídas) |
+| **Front-end (build)** | `npm ci` e `npm run build` do React: falha se o código não compila |
+
+Nenhum segredo fica no workflow: o banco do CI é temporário e sem senha, e a `SECRET_KEY` é
+gerada a cada execução. O resultado aparece como ✅/❌ no commit e no PR, e na aba
+**Actions** do GitHub. Para rodar de novo à mão: Actions → CI → **Run workflow**.
 
 ## Rotas
 
