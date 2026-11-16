@@ -115,3 +115,13 @@ def atualizar(db: Session, ator: User, sala_id: int, alteracoes: dict) -> Sala:
     db.refresh(sala)
     log.info(tipo, sala_id=sala.id, usuario_id=ator.id)
     return sala
+
+
+def desativar(db: Session, ator: User, sala_id: int) -> None:
+    """DELETE /salas/{id}: soft delete. A linha fica (as reservas antigas
+    apontam para ela); a sala só deixa de aparecer no catálogo e de aceitar
+    reservas novas. Idempotente: desativar de novo não muda nada nem gera
+    outro evento de auditoria."""
+    sala = obter(db, sala_id)
+    if sala.ativa:
+        atualizar(db, ator, sala_id, {"ativa": False})

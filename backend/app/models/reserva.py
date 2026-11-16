@@ -42,13 +42,16 @@ class Reserva(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # ondelete RESTRICT (padrão): não se apaga sala/usuário que tem reservas.
+    # ondelete RESTRICT: não se apaga sala nem usuário que tem reservas
+    # (o histórico depende deles). Na prática ambos são desativados.
     sala_id: Mapped[int] = mapped_column(
-        ForeignKey("salas.id", name="fk_reservas_sala_id_salas"), index=True
+        ForeignKey("salas.id", ondelete="RESTRICT", name="fk_reservas_sala_id_salas"),
+        index=True,
     )
     # Dono da reserva: vem SEMPRE do token, nunca do corpo da requisição.
     usuario_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", name="fk_reservas_usuario_id_users"), index=True
+        ForeignKey("users.id", ondelete="RESTRICT", name="fk_reservas_usuario_id_users"),
+        index=True,
     )
     # timestamptz: o PostgreSQL guarda em UTC e converte na leitura.
     inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -77,7 +80,7 @@ class Reserva(Base):
     )
     cancelado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelado_por_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", name="fk_reservas_cancelado_por_id_users")
+        ForeignKey("users.id", ondelete="RESTRICT", name="fk_reservas_cancelado_por_id_users")
     )
 
     # Relacionamentos só para LEITURA (a resposta mostra o nome da sala e de

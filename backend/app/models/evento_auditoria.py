@@ -25,7 +25,8 @@ class EventoAuditoria(Base):
     tipo: Mapped[str] = mapped_column(String(60))  # fato: "reserva.criada"
     # Quem fez. Nulo só em eventos sem usuário logado (ex.: seed).
     usuario_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", name="fk_eventos_auditoria_usuario_id_users")
+        # RESTRICT: a auditoria não pode perder o autor de um evento.
+        ForeignKey("users.id", ondelete="RESTRICT", name="fk_eventos_auditoria_usuario_id_users")
     )
     entidade: Mapped[str] = mapped_column(String(40))  # "reserva", "sala", ...
     entidade_id: Mapped[int] = mapped_column(Integer)

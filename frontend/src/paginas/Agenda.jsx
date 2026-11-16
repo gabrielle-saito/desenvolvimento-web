@@ -13,7 +13,7 @@ import DialogoEditarReserva from "../componentes/DialogoEditarReserva.jsx";
 import { INTERVALO_ATUALIZACAO_MS } from "../config.js";
 import { useAuth } from "../contexto/AuthContext.jsx";
 import * as datas from "../util/datas.js";
-import { cancelarReserva, jaComecou, periodo } from "../util/reservas.js";
+import { AVISO_PRIVACIDADE, cancelarReserva, jaComecou, periodo, titulo } from "../util/reservas.js";
 import { useCarregar, useTitulo } from "../util/useCarregar.js";
 
 // A grade vai das 8h às 20h: 12 colunas, 720 minutos.
@@ -41,18 +41,20 @@ function quando(reserva) {
 }
 
 function BlocoReserva({ reserva, oitoHoras, minha, selecionada, aoClicar }) {
-  const dono = minha ? "você" : reserva.usuario.nome;
+  const rotulo = reserva.detalhes_ocultos
+    ? `Horário reservado, ${periodo(reserva)}, ${reserva.sala.nome}`
+    : `${reserva.finalidade}, ${periodo(reserva)}, ${reserva.sala.nome}, reservada por ${minha ? "você" : reserva.usuario.nome}`;
   return (
     <button
       type="button"
-      className={`bloco-reserva${minha ? " minha" : ""}${selecionada ? " selecionada" : ""}`}
+      className={`bloco-reserva${minha ? " minha" : ""}${reserva.detalhes_ocultos ? " oculta" : ""}${selecionada ? " selecionada" : ""}`}
       style={{ "--inicio": minutosNaGrade(reserva.inicio, oitoHoras), "--fim": minutosNaGrade(reserva.fim, oitoHoras) }}
       data-id={reserva.id}
       aria-pressed={selecionada}
-      aria-label={`${reserva.finalidade}, ${periodo(reserva)}, ${reserva.sala.nome}, reservada por ${dono}`}
+      aria-label={rotulo}
       onClick={aoClicar}
     >
-      <span className="bloco-titulo">{reserva.finalidade}</span>
+      <span className="bloco-titulo">{titulo(reserva)}</span>
       <span className="bloco-hora">
         {periodo(reserva)}
         {minha ? ", você" : ""}
@@ -150,10 +152,12 @@ function Detalhe({ reserva, minha, podeGerenciar, aoEditar, aoCancelar, aoFechar
   return (
     <div className="detalhe-reserva" role="region" aria-labelledby="titulo-detalhe" aria-live="polite">
       <div>
-        <h2 id="titulo-detalhe">{reserva.finalidade}</h2>
+        <h2 id="titulo-detalhe">{reserva.detalhes_ocultos ? "Horário reservado" : reserva.finalidade}</h2>
         <p>
-          {reserva.sala.nome}, {quando(reserva)}, {periodo(reserva)}. Reservada por {minha ? "você" : reserva.usuario.nome}.
+          {reserva.sala.nome}, {quando(reserva)}, {periodo(reserva)}.
+          {reserva.detalhes_ocultos ? null : ` Reservada por ${minha ? "você" : reserva.usuario.nome}.`}
         </p>
+        {reserva.detalhes_ocultos ? <p className="discreto">{AVISO_PRIVACIDADE}</p> : null}
         {comecou && (minha || podeGerenciar) ? <p>Esta reserva já começou e não pode mais ser alterada.</p> : null}
       </div>
       <div className="acoes">

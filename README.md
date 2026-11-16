@@ -142,18 +142,30 @@ Todas sob `/v1`, exceto `/health`. Os erros saem em **Problem Details** (`applic
 | GET | `/v1/salas?busca=&ativas=&capacidade_minima=&recurso=` | logado | catálogo de salas: busca no nome e na localização; `recurso` pode repetir (a sala precisa ter todos) |
 | GET | `/v1/salas/{id}` | logado | lê uma sala (com os recursos) |
 | POST | `/v1/salas` | admin | cria sala, com `recurso_ids` → 201 + Location; nome repetido → 409; recurso inexistente/desativado → 422 |
-| PATCH | `/v1/salas/{id}` | admin | edita; `ativa=false` desativa; `recurso_ids` substitui a lista de recursos |
+| PATCH | `/v1/salas/{id}` | admin | edita; `ativa=true` reativa; `recurso_ids` substitui a lista de recursos |
+| DELETE | `/v1/salas/{id}` | admin | **desativa** (soft delete) → 204; a sala e o histórico ficam; repetir também dá 204 |
 | GET | `/v1/recursos?busca=&ativos=` | logado | lista recursos (projetor, TV...) |
 | GET | `/v1/recursos/{id}` | logado | lê um recurso |
 | POST | `/v1/recursos` | admin | cria recurso → 201 + Location; nome repetido → 409 |
-| PATCH | `/v1/recursos/{id}` | admin | edita; `ativo=false` desativa (as salas que já têm continuam com ele) |
-| GET | `/v1/disponibilidade?inicio=&fim=&capacidade_minima=` | logado | cada sala ativa: livre ou não, e as reservas que conflitam |
-| GET | `/v1/reservas?sala_id=&de=&ate=&minhas=true&status=&busca=` | logado | agenda (todos veem), ordenada por início; busca na finalidade |
-| GET | `/v1/reservas/{id}` | logado | lê uma reserva |
+| PATCH | `/v1/recursos/{id}` | admin | edita; `ativo=true` reativa |
+| DELETE | `/v1/recursos/{id}` | admin | **desativa** (soft delete) → 204; as salas que já têm continuam com ele |
+| GET | `/v1/disponibilidade?inicio=&fim=&capacidade_minima=` | logado | cada sala ativa: livre ou não, e as reservas que conflitam (ver privacidade) |
+| GET | `/v1/reservas?sala_id=&de=&ate=&minhas=true&status=&busca=` | logado | agenda, ordenada por início; busca na finalidade (ver privacidade) |
+| GET | `/v1/reservas/{id}` | dono, responsável, admin | lê uma reserva; reserva de outra pessoa → 404 para colaborador |
 | POST | `/v1/reservas` | logado | reserva → 201 + Location; 409 conflito; 422 período inválido |
 | PATCH | `/v1/reservas/{id}` | dono, responsável, admin | edita; corpo **exige `versao`** (locking otimista) |
 | POST | `/v1/reservas/{id}/cancelamento` | dono, responsável, admin | cancela (mudança de estado, não DELETE) → 200 |
 | GET | `/v1/auditoria?entidade=&entidade_id=` | responsável, admin | trilha de auditoria |
+
+**Privacidade (o colaborador acessa só os próprios dados):** nas reservas de outras pessoas,
+o colaborador recebe apenas a **ocupação** (sala e horário), com `detalhes_ocultos: true` e
+`usuario`, `usuario_id`, `finalidade` e `cancelado_por_id` nulos. Ele não vê as canceladas
+dos outros, e a `busca` procura só nas próprias. Responsável e admin gerenciam as reservas e
+veem tudo. A regra fica em `app/dominio/permissoes.py` (`pode_ver_detalhes_reserva`).
+
+**Exclusão:** nada com histórico é apagado de verdade. `DELETE` em salas e recursos desativa
+(soft delete) e responde **204**; reserva é **cancelada** (mudança de estado). No banco, as
+chaves estrangeiras de `reservas` e `eventos_auditoria` são `ON DELETE RESTRICT`.
 
 **Paginação:** toda listagem aceita `limit` e `offset`, e devolve o total de itens (já com
 os filtros) no cabeçalho **`X-Total-Count`**. Ex.: `GET /v1/salas?limit=10&offset=10` é a
@@ -266,6 +278,7 @@ da API vem de `VITE_API_URL` (padrão `http://localhost:8000`).
 | Entrar / Criar conta | `/login`, `/cadastro` | público |
 | Agenda do dia (linha do tempo, atualiza a cada 30 s) | `/agenda` | logado |
 | Catálogo de salas: busca, filtro por capacidade e recursos, paginação | `/salas` | logado |
+| Detalhe da sala: dados, recursos e ocupação do dia, com o botão de reservar | `/salas/:id` | logado |
 | Consultar disponibilidade e reservar | `/reservar` | logado |
 | Minhas reservas (editar/cancelar, paginada) | `/minhas` | logado |
 | Gerenciar qualquer reserva (filtros, busca, paginada) | `/gerenciar` | responsável, admin |
@@ -287,6 +300,8 @@ frontend/src/
   mostra "Acesso negado" a quem não tem o papel. É só conforto: quem bloqueia é a API (401/403).
 - **Estados de tela:** toda tela que chama a API trata carregando, erro e lista vazia.
 - **Erros da API:** o 422 aparece embaixo de cada campo; 409 e os demais, num aviso no topo.
+- **Privacidade:** nas reservas de outras pessoas, o colaborador vê só "Reservado" e o
+  horário. Os dados nem chegam ao navegador: quem esconde é a API.
 - **Sessão:** o token fica no `sessionStorage` (some ao fechar a aba). Um 401 volta ao login.
 
 Para rodar fora do Docker: `cd frontend && npm install && npm run dev`.

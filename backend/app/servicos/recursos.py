@@ -98,3 +98,11 @@ def atualizar(db: Session, ator: User, recurso_id: int, alteracoes: dict) -> Rec
     db.refresh(recurso)
     log.info(tipo, recurso_id=recurso.id, usuario_id=ator.id)
     return recurso
+
+
+def desativar(db: Session, ator: User, recurso_id: int) -> None:
+    """DELETE /recursos/{id}: soft delete (o banco nem deixaria apagar um
+    recurso em uso: FK RESTRICT). Idempotente, como em salas.desativar."""
+    recurso = obter(db, recurso_id)
+    if recurso.ativo:
+        atualizar(db, ator, recurso_id, {"ativo": False})

@@ -37,7 +37,8 @@ function CartaoDisponibilidade({ item, aoReservar, reservando }) {
           <ul className="horarios">
             {conflitos.map((r) => (
               <li key={r.id}>
-                {datas.hora(r.inicio)} – {datas.hora(r.fim)} · {r.usuario.nome}
+                {datas.hora(r.inicio)} – {datas.hora(r.fim)}
+                {r.detalhes_ocultos ? "" : ` · ${r.usuario.nome}`}
               </li>
             ))}
           </ul>

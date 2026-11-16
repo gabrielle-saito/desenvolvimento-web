@@ -14,6 +14,7 @@ import Login from "./paginas/Login.jsx";
 import MinhasReservas from "./paginas/MinhasReservas.jsx";
 import NaoEncontrada from "./paginas/NaoEncontrada.jsx";
 import Reservar from "./paginas/Reservar.jsx";
+import SalaDetalhe from "./paginas/SalaDetalhe.jsx";
 
 // Rotas no cliente (React Router). Cada nível de RotaProtegida exige um
 // papel mínimo; o Layout (barra + menu) envolve as telas de quem entrou.
@@ -28,6 +29,7 @@ export default function App() {
           <Route index element={<Navigate to="/agenda" replace />} />
           <Route path="agenda" element={<Agenda />} />
           <Route path="salas" element={<Catalogo />} />
+          <Route path="salas/:id" element={<SalaDetalhe />} />
           <Route path="reservar" element={<Reservar />} />
           <Route path="minhas" element={<MinhasReservas />} />
 

@@ -5,14 +5,18 @@ from datetime import datetime
 import structlog
 from sqlalchemy.orm import Session
 
-from app.dominio.enums import StatusReserva
+from app.dominio.enums import Papel, StatusReserva
 from app.dominio.excecoes import (
     AcessoNegado,
     ConflitoDeHorario,
     NaoEncontrado,
     VersaoDesatualizada,
 )
-from app.dominio.permissoes import exigir_pode_alterar_reserva
+from app.dominio.permissoes import (
+    exigir_pode_alterar_reserva,
+    pode_ver_detalhes_reserva,
+    tem_papel_minimo,
+)
 from app.dominio.reservas import (
     garantir_reserva_alteravel,
     garantir_sala_ativa,
@@ -37,6 +41,16 @@ def obter(db: Session, reserva_id: int) -> Reserva:
     return reserva
 
 
+def obter_para(db: Session, ator: User, reserva_id: int) -> Reserva:
+    """Detalhe de UMA reserva (GET /reservas/{id}). Reserva de outra pessoa,
+    para um colaborador, responde 404 e não 403: não confirmamos nem que o id
+    existe. A ocupação da sala ele já vê na agenda."""
+    reserva = obter(db, reserva_id)
+    if not pode_ver_detalhes_reserva(ator.papel, ator.id, reserva):
+        raise NaoEncontrado("Reserva não encontrada.")
+    return reserva
+
+
 def listar(
     db: Session,
     ator: User,
@@ -51,12 +65,26 @@ def listar(
     offset: int,
 ) -> tuple[list[Reserva], int]:
     """Uma página da listagem e o total de itens (para a paginação).
-    A agenda é visível para a empresa toda; "minhas" só filtra."""
+
+    Responsável e admin veem todas as reservas. O colaborador vê:
+      - as PRÓPRIAS, completas e em qualquer status;
+      - as ATIVAS dos outros, só como ocupação (os dados pessoais são
+        omitidos na resposta, ver schemas/reserva.py).
+    Canceladas dos outros não interessam a ele, e a busca pela finalidade
+    só procura nas próprias: buscar no texto alheio revelaria o conteúdo."""
+    usuario_id = ator.id if minhas else None
+    visivel_para = None
+    if not tem_papel_minimo(ator.papel, Papel.RESPONSAVEL) and usuario_id is None:
+        if busca or status == StatusReserva.CANCELADA:
+            usuario_id = ator.id
+        else:
+            visivel_para = ator.id
     filtros = {
         "sala_id": sala_id,
         "de": de,
         "ate": ate,
-        "usuario_id": ator.id if minhas else None,
+        "usuario_id": usuario_id,
+        "visivel_para": visivel_para,
         "status": status,
         "busca": busca,
     }

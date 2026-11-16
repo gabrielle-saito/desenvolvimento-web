@@ -1,6 +1,7 @@
 // Salas (caso de uso 6): cadastrar, listar com busca e paginação, editar
-// (inclusive os recursos) e desativar/reativar. Não há "apagar": sala com
-// reservas antigas é desativada (soft delete).
+// (inclusive os recursos) e desativar/reativar. Não há "apagar" de verdade:
+// o DELETE da API desativa a sala (soft delete), porque as reservas antigas
+// apontam para ela.
 
 import { useState } from "react";
 
@@ -66,7 +67,10 @@ export default function AdminSalas() {
   async function alternarAtiva(sala) {
     if (sala.ativa && !window.confirm(`Desativar a ${sala.nome}? Ela deixa de receber reservas novas; as reservas existentes continuam valendo.`)) return;
     try {
-      await api.patch(`/v1/salas/${sala.id}`, { ativa: !sala.ativa });
+      // Desativar = DELETE (soft delete na API, responde 204).
+      // Reativar = PATCH {ativa: true}.
+      if (sala.ativa) await api.delete(`/v1/salas/${sala.id}`);
+      else await api.patch(`/v1/salas/${sala.id}`, { ativa: true });
       setAviso({ texto: `Sala "${sala.nome}" ${sala.ativa ? "desativada" : "reativada"}.`, tipo: "sucesso" });
     } catch (erro) {
       setAviso({ texto: mensagemDeErro(erro), tipo: "erro" });

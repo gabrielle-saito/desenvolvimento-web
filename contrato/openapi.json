@@ -558,14 +558,27 @@
             "title": "Criado Em",
             "type": "string"
           },
+          "detalhes_ocultos": {
+            "default": false,
+            "description": "true = reserva de outra pessoa: quem reservou e a finalidade não são enviados",
+            "title": "Detalhes Ocultos",
+            "type": "boolean"
+          },
           "fim": {
             "format": "date-time",
             "title": "Fim",
             "type": "string"
           },
           "finalidade": {
-            "title": "Finalidade",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalidade"
           },
           "id": {
             "title": "Id",
@@ -587,11 +600,25 @@
             "$ref": "#/components/schemas/StatusReserva"
           },
           "usuario": {
-            "$ref": "#/components/schemas/UsuarioResumo"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "usuario_id": {
-            "title": "Usuario Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Id"
           },
           "versao": {
             "title": "Versao",
@@ -619,14 +646,26 @@
       },
       "ReservaResumo": {
         "properties": {
+          "detalhes_ocultos": {
+            "default": false,
+            "title": "Detalhes Ocultos",
+            "type": "boolean"
+          },
           "fim": {
             "format": "date-time",
             "title": "Fim",
             "type": "string"
           },
           "finalidade": {
-            "title": "Finalidade",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalidade"
           },
           "id": {
             "title": "Id",
@@ -638,7 +677,14 @@
             "type": "string"
           },
           "usuario": {
-            "$ref": "#/components/schemas/UsuarioResumo"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumo"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -2038,6 +2084,95 @@
       }
     },
     "/v1/recursos/{recurso_id}": {
+      "delete": {
+        "description": "**Soft delete:** o recurso é desativado e deixa de ser oferecido para\nsalas; as que já o têm continuam com ele. Para reativar: `PATCH` com\n`{\"ativo\": true}`. Idempotente: repetir o DELETE responde 204 de novo.",
+        "operationId": "desativar_recurso_v1_recursos__recurso_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recurso_id",
+            "required": true,
+            "schema": {
+              "title": "Recurso Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Corpo ilegível (JSON inválido)"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Sem token, token inválido/expirado ou usuário desativado"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Papel insuficiente ou reserva de outra pessoa"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Recurso não encontrado"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Conflito: horário ocupado, versão desatualizada, nome/e-mail duplicado, reserva cancelada/iniciada ou sala inativa"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Dados inválidos (lista em 'erros') ou período inválido"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Desativar Recurso",
+        "tags": [
+          "recursos"
+        ]
+      },
       "get": {
         "operationId": "obter_recurso_v1_recursos__recurso_id__get",
         "parameters": [
@@ -2241,7 +2376,7 @@
     },
     "/v1/reservas": {
       "get": {
-        "description": "Agenda: todos os papéis veem todas as reservas, ordenadas por início.\nLista vazia = não há reservas para o período (o front mostra a mensagem).\nO total (sem paginação) vem no cabeçalho **X-Total-Count**.",
+        "description": "Agenda, ordenada por início.\n\n- **Responsável e admin:** todas as reservas, completas.\n- **Colaborador:** as próprias, completas; das outras pessoas, só as\n  ativas e só a ocupação (sala e horário). Quem reservou e a finalidade\n  vêm nulos, com `detalhes_ocultos: true`. A `busca` e `status=cancelada`\n  procuram só nas próprias.\n\nLista vazia = não há reservas para o período (o front mostra a mensagem).\nO total (sem paginação) vem no cabeçalho **X-Total-Count**.",
         "operationId": "listar_reservas_v1_reservas_get",
         "parameters": [
           {
@@ -2566,6 +2701,7 @@
     },
     "/v1/reservas/{reserva_id}": {
       "get": {
+        "description": "Colaborador só abre as próprias: reserva de outra pessoa responde 404.",
         "operationId": "obter_reserva_v1_reservas__reserva_id__get",
         "parameters": [
           {
@@ -3171,6 +3307,95 @@
       }
     },
     "/v1/salas/{sala_id}": {
+      "delete": {
+        "description": "**Soft delete:** a sala é desativada, não apagada. As reservas que ela\njá tem continuam no histórico; ela só sai do catálogo e não aceita\nreservas novas. Para reativar: `PATCH` com `{\"ativa\": true}`.\nIdempotente: repetir o DELETE responde 204 de novo.",
+        "operationId": "desativar_sala_v1_salas__sala_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sala_id",
+            "required": true,
+            "schema": {
+              "title": "Sala Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Corpo ilegível (JSON inválido)"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Sem token, token inválido/expirado ou usuário desativado"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Papel insuficiente ou reserva de outra pessoa"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Recurso não encontrado"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Conflito: horário ocupado, versão desatualizada, nome/e-mail duplicado, reserva cancelada/iniciada ou sala inativa"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problema"
+                }
+              }
+            },
+            "description": "Dados inválidos (lista em 'erros') ou período inválido"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Desativar Sala",
+        "tags": [
+          "salas"
+        ]
+      },
       "get": {
         "operationId": "obter_sala_v1_salas__sala_id__get",
         "parameters": [

@@ -80,3 +80,16 @@ def atualizar_sala(
     sala_id: int, payload: SalaAtualizar, db: DbSession, admin: UsuarioAdmin
 ) -> Sala:
     return servico.atualizar(db, admin, sala_id, payload.model_dump(exclude_unset=True))
+
+
+@router.delete(
+    "/{sala_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
+def desativar_sala(sala_id: int, db: DbSession, admin: UsuarioAdmin) -> Response:
+    """**Soft delete:** a sala é desativada, não apagada. As reservas que ela
+    já tem continuam no histórico; ela só sai do catálogo e não aceita
+    reservas novas. Para reativar: `PATCH` com `{"ativa": true}`.
+    Idempotente: repetir o DELETE responde 204 de novo."""
+    servico.desativar(db, admin, sala_id)
+    # 204 = sem corpo e sem content-type (um JSON vazio quebraria o cliente).
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

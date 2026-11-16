@@ -3,6 +3,8 @@ from datetime import datetime
 from pydantic import ConfigDict, Field, model_validator
 
 from app.dominio.enums import StatusReserva
+from app.dominio.permissoes import pode_ver_detalhes_reserva
+from app.models.user import User
 from app.schemas.comum import DataHoraComFuso, Entrada, Saida
 from app.schemas.sala import SalaResumo
 from app.schemas.usuario import UsuarioResumo
@@ -59,26 +61,55 @@ class ReservaAtualizar(Entrada):
         return self
 
 
+# Privacidade: na reserva de OUTRA pessoa, um colaborador recebe só a
+# ocupação (sala e horário). Quem reservou e para quê vêm nulos, com
+# detalhes_ocultos=true. O dono, o responsável e o admin recebem tudo.
+# Regra em app/dominio/permissoes.py (pode_ver_detalhes_reserva).
+_CAMPOS_PESSOAIS = ("usuario_id", "usuario", "finalidade", "cancelado_por_id")
+
+
 class ReservaLeitura(Saida):
     id: int
     sala_id: int
     sala: SalaResumo
-    usuario_id: int
-    usuario: UsuarioResumo
+    usuario_id: int | None
+    usuario: UsuarioResumo | None
     inicio: datetime
     fim: datetime
-    finalidade: str
+    finalidade: str | None
     status: StatusReserva
     versao: int
     criado_em: datetime
     atualizado_em: datetime
     cancelado_em: datetime | None
     cancelado_por_id: int | None
+    detalhes_ocultos: bool = Field(
+        default=False,
+        description="true = reserva de outra pessoa: quem reservou e a finalidade não são enviados",
+    )
 
 
 class ReservaResumo(Saida):
     id: int
     inicio: datetime
     fim: datetime
-    finalidade: str
-    usuario: UsuarioResumo
+    finalidade: str | None
+    usuario: UsuarioResumo | None
+    detalhes_ocultos: bool = False
+
+
+def _visao[T: Saida](modelo: type[T], reserva: object, ator: User) -> T:
+    leitura = modelo.model_validate(reserva)
+    if pode_ver_detalhes_reserva(ator.papel, ator.id, reserva):
+        return leitura
+    ocultos = {campo: None for campo in _CAMPOS_PESSOAIS if campo in modelo.model_fields}
+    return leitura.model_copy(update={**ocultos, "detalhes_ocultos": True})
+
+
+def reserva_para(reserva: object, ator: User) -> ReservaLeitura:
+    """A reserva como `ator` pode vê-la (completa ou só a ocupação)."""
+    return _visao(ReservaLeitura, reserva, ator)
+
+
+def resumo_para(reserva: object, ator: User) -> ReservaResumo:
+    return _visao(ReservaResumo, reserva, ator)
