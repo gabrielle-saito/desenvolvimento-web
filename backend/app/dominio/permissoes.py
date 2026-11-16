@@ -18,6 +18,13 @@ def pode_alterar_reserva(papel: Papel, usuario_id: int, reserva: ReservaLike) ->
     return reserva.usuario_id == usuario_id or tem_papel_minimo(papel, Papel.RESPONSAVEL)
 
 
+def pode_ver_detalhes_reserva(papel: Papel, usuario_id: int, reserva: ReservaLike) -> bool:
+    """Quem reservou e para quê são dados pessoais: só o dono e quem gerencia
+    as reservas (responsável, admin) veem. Os demais sabem apenas que a sala
+    está ocupada naquele horário, o que basta para escolher outra."""
+    return reserva.usuario_id == usuario_id or tem_papel_minimo(papel, Papel.RESPONSAVEL)
+
+
 def exigir_pode_alterar_reserva(papel: Papel, usuario_id: int, reserva: ReservaLike) -> None:
     if not pode_alterar_reserva(papel, usuario_id, reserva):
         raise AcessoNegado("Você só pode alterar ou cancelar as suas próprias reservas.")

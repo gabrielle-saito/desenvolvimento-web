@@ -21,6 +21,7 @@ from app.dominio.excecoes import (
 from app.dominio.permissoes import (
     exigir_pode_alterar_reserva,
     pode_alterar_reserva,
+    pode_ver_detalhes_reserva,
     tem_papel_minimo,
     validar_alteracao_do_proprio_admin,
 )
@@ -168,6 +169,20 @@ def test_hierarquia_de_papeis() -> None:
 def test_pode_alterar_reserva(papel, usuario_id, pode) -> None:
     reserva = ReservaFake(usuario_id=1, inicio=h(10))
     assert pode_alterar_reserva(papel, usuario_id, reserva) is pode
+
+
+@pytest.mark.parametrize(
+    ("papel", "usuario_id", "pode"),
+    [
+        (Papel.COLABORADOR, 1, True),  # dono vê a própria reserva completa
+        (Papel.COLABORADOR, 2, False),  # reserva alheia: só a ocupação
+        (Papel.RESPONSAVEL, 2, True),
+        (Papel.ADMIN, 2, True),
+    ],
+)
+def test_pode_ver_detalhes_reserva(papel, usuario_id, pode) -> None:
+    reserva = ReservaFake(usuario_id=1, inicio=h(10))
+    assert pode_ver_detalhes_reserva(papel, usuario_id, reserva) is pode
 
 
 def test_colaborador_em_reserva_alheia_recebe_acesso_negado() -> None:

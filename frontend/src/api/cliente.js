@@ -52,7 +52,8 @@ async function requisicao(metodo, caminho, { corpo, formulario, params, comTotal
   }
 
   const tipo = resposta.headers.get("content-type") || "";
-  const dados = tipo.includes("json") ? await resposta.json() : null;
+  // 204 No Content não tem corpo: nem tenta ler.
+  const dados = resposta.status !== 204 && tipo.includes("json") ? await resposta.json() : null;
   if (resposta.ok) {
     // Listagens paginadas: o total vem no cabeçalho X-Total-Count.
     if (comTotal) return { itens: dados, total: Number(resposta.headers.get("X-Total-Count") ?? dados.length) };
@@ -70,6 +71,8 @@ export const api = {
   pagina: (caminho, params) => requisicao("GET", caminho, { params, comTotal: true }),
   post: (caminho, corpo) => requisicao("POST", caminho, { corpo }),
   patch: (caminho, corpo) => requisicao("PATCH", caminho, { corpo }),
+  // DELETE responde 204 (sem corpo): resolve com null.
+  delete: (caminho) => requisicao("DELETE", caminho),
   login: (email, senha) =>
     requisicao("POST", "/v1/auth/login", { formulario: { username: email, password: senha } }),
 };

@@ -59,3 +59,15 @@ def atualizar_recurso(
     recurso_id: int, payload: RecursoAtualizar, db: DbSession, admin: UsuarioAdmin
 ) -> Recurso:
     return servico.atualizar(db, admin, recurso_id, payload.model_dump(exclude_unset=True))
+
+
+@router.delete(
+    "/{recurso_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
+def desativar_recurso(recurso_id: int, db: DbSession, admin: UsuarioAdmin) -> Response:
+    """**Soft delete:** o recurso é desativado e deixa de ser oferecido para
+    salas; as que já o têm continuam com ele. Para reativar: `PATCH` com
+    `{"ativo": true}`. Idempotente: repetir o DELETE responde 204 de novo."""
+    servico.desativar(db, admin, recurso_id)
+    # 204 = sem corpo e sem content-type (um JSON vazio quebraria o cliente).
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

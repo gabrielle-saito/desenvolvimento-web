@@ -7,7 +7,7 @@ from fastapi import APIRouter, Query
 from app.api.deps import CurrentUser, DbSession
 from app.schemas.comum import DataHoraComFuso
 from app.schemas.disponibilidade import Disponibilidade, SalaDisponibilidade
-from app.schemas.reserva import ReservaResumo
+from app.schemas.reserva import resumo_para
 from app.schemas.sala import SalaLeitura
 from app.servicos import disponibilidade as servico
 
@@ -43,8 +43,10 @@ def consultar_disponibilidade(
             SalaDisponibilidade(
                 sala=SalaLeitura.model_validate(s.sala),
                 livre=s.livre,
+                # Colaborador vê que a sala está ocupada, mas não por quem nem
+                # para quê (exceto nas próprias reservas).
                 reservas_conflitantes=[
-                    ReservaResumo.model_validate(r) for r in s.reservas_conflitantes
+                    resumo_para(r, usuario) for r in s.reservas_conflitantes
                 ],
             )
             for s in situacoes

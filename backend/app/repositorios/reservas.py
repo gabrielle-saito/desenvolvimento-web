@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import ColumnElement, Select, func, literal, select
+from sqlalchemy import ColumnElement, Select, func, literal, or_, select
 from sqlalchemy.orm import Session
 
 from app.dominio.enums import StatusReserva
@@ -34,6 +34,7 @@ def _filtrado(
     de: datetime | None,
     ate: datetime | None,
     usuario_id: int | None,
+    visivel_para: int | None,
     status: StatusReserva | None,
     busca: str | None,
 ) -> Select[tuple[Reserva]]:
@@ -48,6 +49,12 @@ def _filtrado(
         stmt = stmt.where(Reserva.inicio < ate)
     if usuario_id is not None:
         stmt = stmt.where(Reserva.usuario_id == usuario_id)
+    if visivel_para is not None:
+        # Visão do colaborador: as próprias (qualquer status) + as ATIVAS dos
+        # outros (que ocupam a sala). Canceladas alheias ficam de fora.
+        stmt = stmt.where(
+            or_(Reserva.usuario_id == visivel_para, Reserva.status == StatusReserva.ATIVA)
+        )
     if status is not None:
         stmt = stmt.where(Reserva.status == status)
     if busca:
@@ -62,13 +69,20 @@ def listar(
     de: datetime | None = None,
     ate: datetime | None = None,
     usuario_id: int | None = None,
+    visivel_para: int | None = None,
     status: StatusReserva | None = None,
     busca: str | None = None,
     limit: int,
     offset: int,
 ) -> list[Reserva]:
     stmt = _filtrado(
-        sala_id=sala_id, de=de, ate=ate, usuario_id=usuario_id, status=status, busca=busca
+        sala_id=sala_id,
+        de=de,
+        ate=ate,
+        usuario_id=usuario_id,
+        visivel_para=visivel_para,
+        status=status,
+        busca=busca,
     )
     stmt = stmt.order_by(Reserva.inicio, Reserva.id).limit(limit).offset(offset)
     return list(db.scalars(stmt))
@@ -81,11 +95,18 @@ def contar(
     de: datetime | None = None,
     ate: datetime | None = None,
     usuario_id: int | None = None,
+    visivel_para: int | None = None,
     status: StatusReserva | None = None,
     busca: str | None = None,
 ) -> int:
     stmt = _filtrado(
-        sala_id=sala_id, de=de, ate=ate, usuario_id=usuario_id, status=status, busca=busca
+        sala_id=sala_id,
+        de=de,
+        ate=ate,
+        usuario_id=usuario_id,
+        visivel_para=visivel_para,
+        status=status,
+        busca=busca,
     )
     return db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
 

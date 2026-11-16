@@ -21,6 +21,8 @@ com todas as rotas sob **`/v1`**.
 | Criação | `POST` → **201 Created + header `Location`** com a URL do novo recurso |
 | Alteração | `PATCH` parcial (`exclude_unset`); o PATCH de reserva **exige `versao`** (ver ADR-003) |
 | Cancelamento | `POST /v1/reservas/{id}/cancelamento` → 200 com a reserva cancelada. É **mudança de estado**, não `DELETE`: o histórico fica |
+| Exclusão de cadastros | `DELETE /v1/salas/{id}` e `DELETE /v1/recursos/{id}` → **204 No Content**, como **soft delete** (marca `ativa`/`ativo = false`). Para quem usa o catálogo, o item deixa de existir; a linha fica porque reservas antigas apontam para ela. É idempotente (repetir dá 204), e reativar é `PATCH` com `ativa: true`. A reserva não segue esse caminho: cancelada, ela continua aparecendo para o dono, com quem e quando cancelou, então é um estado, não uma remoção |
+| Privacidade | Colaborador vê as reservas dos outros só como ocupação (`detalhes_ocultos: true`, sem dono nem finalidade); o detalhe de reserva alheia responde **404**, não 403, para não confirmar que o id existe |
 | Paginação | `limit`/`offset` com teto (100 a 500 conforme a rota), como na base. O total (já filtrado) vai no cabeçalho `X-Total-Count`: o corpo continua sendo a lista, então nenhum cliente quebra |
 | Autenticação | OAuth2 password flow → JWT (`POST /v1/auth/login`); `tokenUrl` atualizado para `/v1/auth/login` |
 | Cadastro de usuários | Público: `POST /v1/auth/registro`, **sempre como colaborador** (o corpo não aceita `papel`). Admin: `POST /v1/usuarios`, com qualquer papel. A rota antiga em inglês `POST /auth/register` não existe mais |

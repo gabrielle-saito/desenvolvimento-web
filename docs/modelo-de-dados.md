@@ -85,7 +85,7 @@ erDiagram
 
 - **Sem reserva dupla:** a mesma sala não pode ter duas reservas **ativas** com horários que se sobrepõem. Reservas encostadas (10h–11h e 11h–12h) são permitidas.
 - **Horário válido:** o fim da reserva é sempre depois do início.
-- **Nada é apagado, só desativado:** salas, recursos e usuários têm um campo `ativo`/`ativa`. Uma reserva é **cancelada**, não apagada. Assim o histórico continua íntegro.
+- **Nada é apagado, só desativado:** salas, recursos e usuários têm um campo `ativo`/`ativa`, e o `DELETE` da API apenas desativa (soft delete). Uma reserva é **cancelada**, não apagada. Assim o histórico continua íntegro, e o banco garante isso com `ON DELETE RESTRICT` nas chaves estrangeiras.
 - **Auditoria imutável:** eventos de auditoria só podem ser inseridos, nunca alterados ou apagados.
 
 ---
@@ -96,12 +96,12 @@ erDiagram
 
 ```mermaid
 erDiagram
-    users |o--o{ eventos_auditoria : "usuario_id"
-    users ||--o{ reservas : "usuario_id"
-    users |o--o{ reservas : "cancelado_por_id"
-    salas ||--o{ reservas : "sala_id"
-    salas ||--o{ sala_recursos : "sala_id (CASCADE)"
-    recursos ||--o{ sala_recursos : "recurso_id (RESTRICT)"
+    users |o--o{ eventos_auditoria : "autor"
+    users ||--o{ reservas : "dono"
+    users |o--o{ reservas : "cancelou"
+    salas ||--o{ reservas : "sala"
+    salas ||--o{ sala_recursos : "sala"
+    recursos ||--o{ sala_recursos : "recurso"
 
     users {
         integer id PK
@@ -129,13 +129,13 @@ erDiagram
         timestamptz criado_em "NOT NULL, default now()"
     }
     sala_recursos {
-        integer sala_id PK,FK
-        integer recurso_id PK,FK
+        integer sala_id PK,FK "ON DELETE CASCADE"
+        integer recurso_id PK,FK "ON DELETE RESTRICT"
     }
     reservas {
         integer id PK
-        integer sala_id FK "NOT NULL"
-        integer usuario_id FK "NOT NULL"
+        integer sala_id FK "NOT NULL, ON DELETE RESTRICT"
+        integer usuario_id FK "NOT NULL, ON DELETE RESTRICT"
         timestamptz inicio "NOT NULL"
         timestamptz fim "NOT NULL, CHECK > inicio"
         varchar_500 finalidade "NOT NULL"
@@ -144,12 +144,12 @@ erDiagram
         timestamptz criado_em "NOT NULL"
         timestamptz atualizado_em "NOT NULL"
         timestamptz cancelado_em "NULL"
-        integer cancelado_por_id FK "NULL"
+        integer cancelado_por_id FK "NULL, ON DELETE RESTRICT"
     }
     eventos_auditoria {
         bigint id PK
         varchar_60 tipo "NOT NULL"
-        integer usuario_id FK "NULL"
+        integer usuario_id FK "NULL, ON DELETE RESTRICT"
         varchar_40 entidade "NOT NULL"
         integer entidade_id "NOT NULL"
         jsonb dados "NOT NULL"
@@ -215,8 +215,8 @@ Legenda: **PK** chave primária · **FK** chave estrangeira · **UK** valor úni
 | Coluna | Tipo | Nulo | Padrão | Observação |
 | --- | --- | --- | --- | --- |
 | `id` | `integer` | não | sequência | **PK** |
-| `sala_id` | `integer` | não | | **FK** → `salas.id` (índice `ix_reservas_sala_id`) |
-| `usuario_id` | `integer` | não | | **FK** → `users.id`, dono da reserva (índice `ix_reservas_usuario_id`) |
+| `sala_id` | `integer` | não | | **FK** → `salas.id`, `ON DELETE RESTRICT` (índice `ix_reservas_sala_id`) |
+| `usuario_id` | `integer` | não | | **FK** → `users.id`, `ON DELETE RESTRICT`, dono da reserva (índice `ix_reservas_usuario_id`) |
 | `inicio` | `timestamptz` | não | | |
 | `fim` | `timestamptz` | não | | `CHECK (fim > inicio)` |
 | `finalidade` | `varchar(500)` | não | | |
@@ -225,7 +225,7 @@ Legenda: **PK** chave primária · **FK** chave estrangeira · **UK** valor úni
 | `criado_em` | `timestamptz` | não | `now()` | |
 | `atualizado_em` | `timestamptz` | não | `now()` | |
 | `cancelado_em` | `timestamptz` | sim | | preenchido ao cancelar |
-| `cancelado_por_id` | `integer` | sim | | **FK** → `users.id`, quem cancelou |
+| `cancelado_por_id` | `integer` | sim | | **FK** → `users.id`, `ON DELETE RESTRICT`, quem cancelou |
 
 **Constraint de exclusão (garantia contra reserva dupla):**
 
@@ -241,7 +241,7 @@ Ela diz: "não podem existir duas reservas **ativas** com a **mesma sala** (`=`)
 
 **Locking otimista:** toda alteração faz `UPDATE ... WHERE id = :id AND versao = :versao_lida` e soma 1 à versão. Se outra pessoa salvou antes, nenhuma linha é alterada e a API responde **409 Conflict**, em vez de sobrescrever a alteração do outro.
 
-As FKs de `reservas` usam a regra padrão (`NO ACTION`): não é possível apagar uma sala ou um usuário que tenha reservas.
+As três FKs de `reservas` são `ON DELETE RESTRICT`: o banco recusa apagar uma sala ou um usuário que tenha reservas. Salas e usuários são desativados, nunca apagados, e o histórico continua apontando para eles.
 
 #### `eventos_auditoria`
 
@@ -249,7 +249,7 @@ As FKs de `reservas` usam a regra padrão (`NO ACTION`): não é possível apaga
 | --- | --- | --- | --- | --- |
 | `id` | `bigint` | não | sequência | **PK** |
 | `tipo` | `varchar(60)` | não | | o fato ocorrido, ex.: `reserva.criada`, `sala.atualizada` |
-| `usuario_id` | `integer` | sim | | **FK** → `users.id`, quem fez a ação (nulo quando não há usuário logado) |
+| `usuario_id` | `integer` | sim | | **FK** → `users.id`, `ON DELETE RESTRICT`, quem fez a ação (nulo quando não há usuário logado) |
 | `entidade` | `varchar(40)` | não | | tipo do registro afetado: `reserva`, `sala`, `recurso`, `usuario` |
 | `entidade_id` | `integer` | não | | id do registro afetado |
 | `dados` | `jsonb` | não | | `{"antes": {...}, "depois": {...}}` |
@@ -274,3 +274,10 @@ As FKs de `reservas` usam a regra padrão (`NO ACTION`): não é possível apaga
 | CHECK | `ck_reservas_versao_positiva` | `reservas` | versão ≥ 1 |
 | EXCLUDE | `ex_reservas_sala_sem_sobreposicao` | `reservas` | sem sobreposição de horário na mesma sala |
 | TRIGGER | `tg_eventos_auditoria_somente_insert` | `eventos_auditoria` | proíbe UPDATE e DELETE |
+| FK RESTRICT | `fk_reservas_sala_id_salas` | `reservas` | não apaga sala com reservas |
+| FK RESTRICT | `fk_reservas_usuario_id_users`, `fk_reservas_cancelado_por_id_users` | `reservas` | não apaga usuário com reservas |
+| FK RESTRICT | `fk_eventos_auditoria_usuario_id_users` | `eventos_auditoria` | não apaga autor de evento |
+| FK RESTRICT | `fk_sala_recursos_recurso_id_recursos` | `sala_recursos` | não apaga recurso em uso |
+| FK CASCADE | `fk_sala_recursos_sala_id_salas` | `sala_recursos` | apagar a sala apaga as ligações dela |
+
+Toda chave estrangeira tem a ação de exclusão declarada. O teste `test_todas_as_chaves_estrangeiras_tem_acao_de_exclusao_definida` falha se alguma ficar sem.

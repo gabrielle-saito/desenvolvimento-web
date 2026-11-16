@@ -107,7 +107,10 @@ export default function AdminRecursos() {
   async function alternarAtivo(recurso) {
     if (recurso.ativo && !window.confirm(`Desativar "${recurso.nome}"? Ele deixa de aparecer como opção para as salas; as que já o têm continuam com ele.`)) return;
     try {
-      await api.patch(`/v1/recursos/${recurso.id}`, { ativo: !recurso.ativo });
+      // Desativar = DELETE (soft delete na API, responde 204).
+      // Reativar = PATCH {ativo: true}.
+      if (recurso.ativo) await api.delete(`/v1/recursos/${recurso.id}`);
+      else await api.patch(`/v1/recursos/${recurso.id}`, { ativo: true });
       setAviso({ texto: `Recurso "${recurso.nome}" ${recurso.ativo ? "desativado" : "reativado"}.`, tipo: "sucesso" });
     } catch (erro) {
       setAviso({ texto: mensagemDeErro(erro), tipo: "erro" });
