@@ -5,7 +5,7 @@ que causava conflitos de horário, informação desatualizada e dificuldade de v
 disponibilidade.
 
 - **Back-end:** FastAPI + PostgreSQL 16 + SQLAlchemy 2 + Alembic, com JWT (pyjwt + Argon2)
-- **Front-end:** HTML + CSS + JavaScript puro (sem build), em `frontend/`
+- **Front-end:** React 19 + Vite + React Router, em `frontend/`. Sessão compartilhada com Context API
 - **Arquitetura:** monolito modular (1 processo + 1 banco). Ver [ADR-001](docs/adr/ADR-001-monolito-modular.md)
 - **Garantia contra reserva dupla:** constraint de exclusão no PostgreSQL. Ver [ADR-003](docs/adr/ADR-003-concorrencia-e-tempo-real.md)
 
@@ -231,12 +231,48 @@ backend/
 │   ├── core/ db/       configuração, segurança (Argon2, JWT), sessão
 │   └── scripts/        seed, exportar_openapi, carga_disponibilidade
 └── tests/
-frontend/               HTML + CSS + JS (config.js tem a URL da API)
+frontend/               React + Vite (ver "Front-end" abaixo)
 contrato/openapi.json   contrato exportado
 docs/adr/               decisões de arquitetura
 docs/cenarios-qualidade.md
 postman/                collection + environment
 ```
+
+## Front-end
+
+React 19 + Vite + React Router, sem biblioteca de componentes (o CSS é próprio, em
+`src/estilo.css`). No Docker, o serviço `web` roda o Vite com recarga automática; o endereço
+da API vem de `VITE_API_URL` (padrão `http://localhost:8000`).
+
+| Tela | Rota | Quem |
+| --- | --- | --- |
+| Entrar / Criar conta | `/login`, `/cadastro` | público |
+| Agenda do dia (linha do tempo, atualiza a cada 30 s) | `/agenda` | logado |
+| Catálogo de salas: busca, filtro por capacidade e recursos, paginação | `/salas` | logado |
+| Consultar disponibilidade e reservar | `/reservar` | logado |
+| Minhas reservas (editar/cancelar, paginada) | `/minhas` | logado |
+| Gerenciar qualquer reserva (filtros, busca, paginada) | `/gerenciar` | responsável, admin |
+| Administração: salas, recursos, usuários | `/admin/salas`, `/admin/recursos`, `/admin/usuarios` | admin |
+
+```
+frontend/src/
+├── main.jsx            BrowserRouter + AuthProvider + App
+├── App.jsx             rotas (React Router) e o papel mínimo de cada grupo
+├── contexto/           AuthContext: usuário logado para todas as telas (useAuth)
+├── api/                cliente.js (fetch, token, erros RFC 9457, X-Total-Count) e sessao.js
+├── componentes/        Layout, RotaProtegida, Campo, Paginacao, Janela, TabelaReservas,
+│                       CartaoSala, FormSala, SeletorRecursos, Aviso, Carregando...
+├── paginas/            uma tela por arquivo (admin/ tem as abas da administração)
+└── util/               datas (fuso de São Paulo), useCarregar (carregando/erro/dados)
+```
+
+- **Rotas protegidas nos dois lados:** `RotaProtegida` leva quem não entrou para o login e
+  mostra "Acesso negado" a quem não tem o papel. É só conforto: quem bloqueia é a API (401/403).
+- **Estados de tela:** toda tela que chama a API trata carregando, erro e lista vazia.
+- **Erros da API:** o 422 aparece embaixo de cada campo; 409 e os demais, num aviso no topo.
+- **Sessão:** o token fica no `sessionStorage` (some ao fechar a aba). Um 401 volta ao login.
+
+Para rodar fora do Docker: `cd frontend && npm install && npm run dev`.
 
 ## Documentação
 

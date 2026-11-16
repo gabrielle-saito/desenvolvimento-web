@@ -1,0 +1,776 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400..700&display=swap");
+
+/* Reserva de Salas — estilo único, sem framework.
+   Acessibilidade: contraste AA nas cores de texto, foco sempre visível,
+   alvos de toque com pelo menos 44px, respeita "reduzir movimento".
+
+   Identidade: fundo branco, roxo #5b2fd6. O site é sempre claro (não muda
+   com o modo escuro do sistema). Verde (livre) e vermelho (erro/cancelar)
+   continuam: carregam significado. */
+:root {
+  --fundo: #ffffff;
+  --fundo-suave: #f7f5fc;
+  --superficie: #ffffff;
+  --texto: #1c1630;
+  --discreto: #625b78;
+  --borda: #e6e1f2;
+  --borda-campo: #cfc7e3;
+  --primaria: #5b2fd6;
+  --primaria-texto: #ffffff;
+  --primaria-escura: #4823b0;
+  --primaria-suave: #efeafe;
+  --bloco-fundo: #efeafe;
+  --bloco-borda: #dcd0fd;
+  --bloco-texto: #34187a;
+  --agora: #e0457b;
+  --destaque: #7650e8;
+  --sucesso: #1d6b3a;
+  --sucesso-fundo: #e5f4ea;
+  --erro: #b42344;
+  --erro-borda: #f1c4ce;
+  --erro-fundo: #fdeef1;
+  --info: #4823b0;
+  --info-fundo: #efeafe;
+  --foco-campo: #000000;
+  --raio: 6px;
+  --raio-caixa: 10px;
+  --sombra: 0 1px 2px rgb(28 22 48 / 6%);
+  --fonte-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --fonte-texto: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --largura: 1240px;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+h1, h2, h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 650;
+  line-height: 1.2;
+}
+h1 { font-size: 1.75rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+section { margin-top: 2rem; }
+
+a { color: var(--primaria); }
+
+/* Foco do teclado em links e botões. Campos têm o próprio estilo (abaixo). */
+:focus-visible {
+  outline: 3px solid var(--destaque);
+  outline-offset: 2px;
+}
+
+.pular {
+  position: absolute;
+  left: -9999px;
+}
+.pular:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  background: var(--superficie);
+  padding: 0.5rem 1rem;
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ barra superior */
+/* O conteúdo fica centralizado em 1240px; o padding lateral faz isso sem
+   precisar de um <div> a mais dentro do <header> de cada página. */
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 2rem;
+  min-height: 64px;
+  padding: 0 max(24px, calc((100% - var(--largura)) / 2 + 24px));
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+}
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--texto);
+  text-decoration: none;
+}
+/* Quadrado roxo com três barrinhas (branca, lilás, branca), como blocos de agenda. */
+.marca::before {
+  content: "";
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' rx='8' fill='%235b2fd6'/%3E%3Crect x='7' y='8' width='11' height='3' rx='1.5' fill='%23fff'/%3E%3Crect x='11' y='13.5' width='12' height='3' rx='1.5' fill='%23c4b2fa'/%3E%3Crect x='7' y='19' width='9' height='3' rx='1.5' fill='%23fff'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+#menu { flex: 1; min-width: 0; }
+#menu ul {
+  display: flex;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#menu a {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: var(--raio);
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--discreto);
+  font-size: 15px;
+  font-weight: 500;
+}
+#menu a:hover { background: var(--fundo-suave); }
+#menu a[aria-current="page"] {
+  background: var(--primaria-suave);
+  color: var(--primaria-escura);
+  font-weight: 600;
+}
+.usuario-logado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primaria);
+  color: var(--primaria-texto);
+  font-size: 13px;
+  font-weight: 700;
+}
+.usuario-texto { display: flex; flex-direction: column; line-height: 1.25; }
+.usuario-texto strong { font-size: 14.5px; font-weight: 600; }
+.usuario-papel { font-size: 13px; color: var(--discreto); }
+.usuario-logado .botao-fantasma { margin-left: 6px; min-height: 36px; }
+
+main {
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 36px 24px 72px;
+}
+
+/* ------------------------------------------------------------- formulários */
+label {
+  display: block;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+}
+input, select, button {
+  font: inherit;
+  min-height: 44px;
+}
+input, select {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--borda-campo);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--texto);
+}
+/* Campo selecionado: sem contorno colorido, só a borda escura e mais grossa.
+   O "engrossar" é uma sombra de 1px colada na borda, então o tamanho do
+   campo não muda e nada pula na tela. */
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--foco-campo);
+  box-shadow: 0 0 0 1px var(--foco-campo);
+}
+input[aria-invalid="true"], select[aria-invalid="true"] {
+  border-color: var(--erro);
+  border-width: 2px;
+}
+.erro-campo {
+  display: block;
+  color: var(--erro);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* Botões. Padrão = secundário (branco, borda, texto roxo). */
+button, a.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borda-campo);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  color: var(--primaria-escura);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+button:hover, a.botao:hover { border-color: var(--primaria); }
+button:disabled { opacity: 0.6; cursor: wait; }
+button.primario, a.botao.primario {
+  background: var(--primaria);
+  border-color: var(--primaria);
+  color: var(--primaria-texto);
+}
+button.primario:hover, a.botao.primario:hover {
+  background: var(--primaria-escura);
+  border-color: var(--primaria-escura);
+}
+button.perigo {
+  border-color: var(--erro-borda);
+  color: var(--erro);
+}
+button.perigo:hover { background: var(--erro-fundo); border-color: var(--erro-borda); }
+/* Fantasma: sem borda, fundo lilás no hover. */
+button.botao-fantasma {
+  border-color: transparent;
+  background: transparent;
+  color: var(--primaria);
+}
+button.botao-fantasma:hover { background: var(--fundo-suave); border-color: transparent; }
+button.largo { width: 100%; margin-top: 1.25rem; }
+.botao-link {
+  min-height: auto;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: none;
+  color: var(--primaria);
+  text-decoration: underline;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0 1rem;
+}
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+/* Célula de tabela continua "table-cell" (flex quebraria as bordas). */
+td.acoes { display: table-cell; margin: 0; white-space: nowrap; }
+td.acoes > * + * { margin-left: 0.5rem; }
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 1rem;
+  margin-bottom: 1rem;
+}
+.filtros > div { min-width: 160px; }
+
+/* ----------------------------------------------------------------- cartões */
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-caixa);
+  box-shadow: var(--sombra);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.grade-salas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.grade-salas .cartao { margin: 0; }
+.largura-total { grid-column: 1 / -1; }
+.sala-livre { border-left: 6px solid var(--sucesso); }
+.sala-ocupada { border-left: 6px solid var(--erro); }
+.livre { color: var(--sucesso); font-weight: 600; }
+.ocupada { color: var(--erro); font-weight: 600; margin-bottom: 0.25rem; }
+.horarios { list-style: none; padding: 0; margin: 0.5rem 0; }
+.horarios li { padding: 0.4rem 0; border-top: 1px solid var(--borda); }
+.horarios li:first-child { border-top: none; }
+.cartao.sala h2, .cartao.sala h3 { color: var(--primaria-escura); }
+
+.discreto { color: var(--discreto); }
+.bloco { display: block; font-size: 0.9rem; }
+.vazio { color: var(--discreto); font-style: italic; }
+.etiqueta {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.inativo { opacity: 0.75; }
+
+/* ----------------------------------------------------------------- avisos */
+.aviso {
+  padding: 0.75rem 1rem;
+  border-radius: var(--raio);
+  border-left: 6px solid currentColor;
+  margin: 0.75rem 0;
+}
+.aviso-sucesso { color: var(--sucesso); background: var(--sucesso-fundo); }
+.aviso-erro { color: var(--erro); background: var(--erro-fundo); }
+.aviso-info { color: var(--info); background: var(--info-fundo); }
+
+/* ----------------------------------------------------------------- tabelas */
+.tabela-rolavel { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+th { font-size: 0.9rem; color: var(--discreto); background: var(--fundo-suave); }
+td select { min-width: 140px; }
+
+.lista-admin { list-style: none; padding: 0; margin: 0; }
+.item-admin .linha { align-items: end; }
+
+/* ------------------------------------------------------------------ diálogo */
+dialog {
+  width: min(520px, calc(100vw - 2rem));
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-caixa);
+  background: var(--superficie);
+  color: var(--texto);
+  padding: 1.25rem;
+}
+dialog::backdrop { background: rgb(28 22 48 / 45%); }
+
+/* ------------------------------------------------------------------ agenda */
+.agenda-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.agenda-topo h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: -0.02em; }
+.agenda-topo p { margin: 0; color: var(--discreto); }
+.agenda-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.agenda-controles input { width: auto; height: 44px; }
+
+/* A caixa rola na horizontal; a página não. */
+.agenda-rolavel {
+  overflow-x: auto;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-caixa);
+  background: var(--superficie);
+}
+.agenda {
+  --col-sala: 184px;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--col-sala) 1fr;
+  min-width: 860px;
+}
+.agenda-canto,
+.agenda-regua {
+  background: var(--fundo-suave);
+  border-bottom: 1px solid var(--borda);
+}
+.agenda-canto {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  border-right: 1px solid var(--borda);
+}
+.agenda-regua {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+.agenda-regua span {
+  padding: 9px 0 9px 7px;
+  border-left: 1px solid var(--borda);
+  font-size: 12.5px;
+  color: var(--discreto);
+}
+.agenda-regua span:first-child { border-left: none; }
+
+.agenda-sala {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 18px;
+  border-right: 1px solid var(--borda);
+  border-bottom: 1px solid var(--borda);
+  background: var(--superficie);
+  line-height: 1.3;
+}
+.agenda-sala strong { font-weight: 600; }
+.agenda-sala span { font-size: 13px; color: var(--discreto); }
+/* Linhas verticais das horas: um traço de 1px no começo de cada coluna. */
+.agenda-faixa {
+  position: relative;
+  min-height: 68px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--borda);
+  background-image: linear-gradient(to right, var(--borda) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+  /* -1px: o traço da 1ª hora some atrás da borda da coluna das salas
+     (senão a borda fica dupla) e os outros alinham com a régua. */
+  background-position: -1px 0;
+}
+.agenda-sala.ultima,
+.agenda-faixa.ultima { border-bottom: none; }
+
+/* --inicio e --fim: minutos desde as 8h (0 a 720). */
+.bloco-reserva {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: calc(var(--inicio) / 720 * 100% + 2px);
+  width: calc((var(--fim) - var(--inicio)) / 720 * 100% - 4px);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  min-height: 0;
+  padding: 4px 10px;
+  overflow: hidden;
+  border: 1px solid var(--bloco-borda);
+  border-radius: var(--raio);
+  background: var(--bloco-fundo);
+  color: var(--bloco-texto);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+  text-align: left;
+}
+.bloco-reserva:hover { border-color: var(--destaque); }
+.bloco-titulo, .bloco-hora {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.bloco-titulo { font-weight: 700; }
+.bloco-hora { opacity: 0.85; }
+.bloco-reserva.minha {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: var(--primaria-texto);
+}
+.bloco-reserva.minha:hover { border-color: var(--destaque); }
+.bloco-reserva.selecionada { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--destaque); }
+/* Com o anel, o bloco não pode ser cortado pela faixa: os 8px de folga
+   em cima e embaixo cabem os 4px do anel. */
+
+/* Camada da linha "agora": ocupa a coluna 2 de todas as salas. */
+.agenda-camada-agora {
+  position: relative;
+  z-index: 2;
+  grid-column: 2;
+  pointer-events: none;
+}
+.agenda-agora {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--pos) / 720 * 100%);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--agora);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+  color: var(--discreto);
+}
+.legenda[hidden], .legenda li[hidden] { display: none; }
+.legenda li { display: flex; align-items: center; gap: 8px; }
+.amostra { display: inline-block; flex: none; width: 14px; height: 14px; border-radius: 4px; }
+.amostra.minha { background: var(--primaria); }
+.amostra.outra { background: var(--bloco-fundo); border: 1px solid var(--bloco-borda); }
+.amostra.agora { width: 2px; height: 16px; border-radius: 0; background: var(--agora); }
+
+.detalhe-reserva {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-top: 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-caixa);
+  background: var(--fundo-suave);
+}
+.detalhe-reserva[hidden] { display: none; }
+.detalhe-reserva h2 { margin: 0 0 4px; font-size: 21px; }
+.detalhe-reserva p { margin: 0; color: var(--discreto); }
+.detalhe-reserva .acoes { margin: 0; gap: 8px; }
+
+.agenda-sem-reservas {
+  padding: 48px;
+  border: 1px dashed var(--borda-campo);
+  border-radius: var(--raio-caixa);
+  text-align: center;
+}
+.agenda-sem-reservas[hidden] { display: none; }
+.agenda-sem-reservas h2 { margin: 0 0 6px; font-size: 22px; }
+.agenda-sem-reservas p { margin: 0 0 20px; color: var(--discreto); }
+
+/* ------------------------------------------------------- peças reutilizáveis */
+/* Carregando: um ponto que pulsa + texto (o texto é o que o leitor de tela lê). */
+.carregando {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1.5rem 0;
+  color: var(--discreto);
+}
+.carregando-ponto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primaria);
+  animation: pulsar 1s ease-in-out infinite alternate;
+}
+@keyframes pulsar { from { opacity: 0.25; } to { opacity: 1; } }
+[aria-busy="true"] { opacity: 0.6; transition: opacity 0.15s; }
+
+/* Paginação: Anterior · Página X de Y · Próxima */
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+.paginacao p { margin: 0; }
+
+/* Abas da administração (cada aba é uma rota). */
+.abas {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 20px;
+  border-bottom: 1px solid var(--borda);
+  overflow-x: auto;
+}
+.abas a {
+  padding: 10px 14px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  color: var(--discreto);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.abas a:hover { color: var(--primaria-escura); }
+.abas a[aria-current="page"] { color: var(--primaria-escura); border-bottom-color: var(--primaria); }
+
+/* Etiquetas de recursos ("Projetor", "TV"). */
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.etiquetas .etiqueta {
+  border-color: var(--bloco-borda);
+  background: var(--primaria-suave);
+  color: var(--primaria-escura);
+}
+
+/* Caixas de seleção dos recursos. */
+.seletor-recursos {
+  margin: 1rem 0 0;
+  padding: 0;
+  border: none;
+}
+.seletor-recursos legend { padding: 0; font-weight: 600; margin-bottom: 0.25rem; }
+.opcoes-recursos { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.opcao-recurso {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  min-height: 44px;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.opcao-recurso:has(input:checked) {
+  border-color: var(--primaria);
+  background: var(--primaria-suave);
+  color: var(--primaria-escura);
+}
+.opcao-recurso:has(input:focus-visible) { outline: 3px solid var(--destaque); outline-offset: 2px; }
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  accent-color: var(--primaria);
+}
+input[type="checkbox"]:focus { box-shadow: none; }
+
+.filtros-catalogo .seletor-recursos { margin-top: 0.75rem; }
+.cartao-catalogo { display: flex; flex-direction: column; }
+.cartao-catalogo h2 { font-size: 1.15rem; }
+.cartao-catalogo p { margin: 0 0 0.35rem; }
+.cartao-catalogo .acoes { margin-top: auto; padding-top: 1rem; }
+.cartao.sala .etiquetas { margin-bottom: 0.5rem; }
+
+dialog h2 { margin-bottom: 0.25rem; }
+.filtros .acoes { margin-top: 0.75rem; }
+.login-ajuda a { font-weight: 600; }
+
+/* ------------------------------------------------------------------- login */
+/* Duas colunas: destaque roxo-escuro à esquerda, formulário à direita.
+   No celular as colunas empilham. */
+.pagina-login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.login-destaque {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 3rem;
+  background: #22104a;
+  color: #ffffff;
+}
+.login-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 18px;
+}
+.logo { flex: none; }
+.login-chamada {
+  margin: auto 0;
+  max-width: 30rem;
+  padding: 3rem 0;
+}
+.login-chamada h2 {
+  max-width: 9.5em;
+  margin: 0 0 1.25rem;
+  font-size: clamp(2rem, 3.6vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.login-chamada p { margin: 0; color: #c9bcff; font-size: 1rem; }
+
+.login-painel {
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.5rem;
+}
+.login-form { width: min(380px, 100%); }
+.login-form h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+.login-form > .discreto { margin: 0 0 1.25rem; font-size: 0.95rem; }
+.login-form label { font-size: 0.9rem; margin-top: 1rem; }
+.login-form input::placeholder { color: #8c82a6; }
+.login-form button.primario { margin-top: 1.5rem; }
+
+/* "Mostrar" dentro do campo de senha. */
+.campo-senha { position: relative; }
+.campo-senha input { padding-right: 5.5rem; }
+.mostrar-senha {
+  position: absolute;
+  top: 0;
+  right: 0.25rem;
+  height: 44px;
+  min-height: 0;
+  padding: 0 0.65rem;
+  border: none;
+  background: none;
+  color: var(--primaria);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.mostrar-senha:hover { text-decoration: underline; background: none; }
+
+.login-ajuda {
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--borda);
+  font-size: 0.85rem;
+  color: var(--primaria);
+}
+
+/* -------------------------------------------------------------- responsivo */
+@media (max-width: 800px) {
+  .pagina-login { grid-template-columns: 1fr; }
+  .login-destaque { padding: 1.5rem 1rem; }
+  .login-chamada { padding: 1.5rem 0 0.5rem; }
+  .login-painel { place-items: start center; padding: 2rem 1rem; }
+}
+
+@media (max-width: 760px) {
+  /* Barra: marca e avatar na 1ª linha; menu numa linha própria que rola. */
+  .topo { flex-wrap: wrap; padding: 10px 16px 0; gap: 8px 12px; }
+  .usuario-logado { margin-left: auto; }
+  .usuario-texto { display: none; }
+  #menu {
+    order: 3;
+    flex: 1 1 100%;
+    overflow-x: auto;
+    margin: 0 -16px;
+    padding: 0 16px 8px;
+  }
+  main { padding: 24px 16px 56px; }
+  .agenda-topo h1 { font-size: 28px; }
+  .agenda-controles { width: 100%; }
+  .agenda-controles input { flex: 1; }
+  .agenda { --col-sala: 136px; }
+  .agenda-sala { padding: 10px 12px; }
+  .agenda-sem-reservas { padding: 32px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}

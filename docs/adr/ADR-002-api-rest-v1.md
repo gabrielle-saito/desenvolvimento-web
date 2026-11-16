@@ -5,7 +5,7 @@
 
 ## Contexto
 
-A API atende hoje um front-end próprio (HTML + JS) e o Postman da disciplina. Ela deve ser
+A API atende hoje um front-end próprio (React) e o Postman da disciplina. Ela deve ser
 previsível para quem nunca a viu: os mesmos padrões de URL, de status e de erro em todas as
 rotas. A base do professor usava rotas sem versão (`/auth`, `/items`), um `POST /auth/register`
 público e erros no formato padrão do FastAPI (`{"detail": ...}`).
@@ -69,7 +69,7 @@ existência da reserva não protege nada, e o 403 diz a verdade: "existe, mas vo
 ## Consequências
 
 **Boas**
-- O front trata erros por status, em um lugar só (`frontend/js/api.js`): 401 volta ao login,
+- O front trata erros por status, em um lugar só (`frontend/src/api/cliente.js`): 401 volta ao login,
   403 mostra "acesso negado", 409 mostra o `detail` e 422 mostra o erro em cada campo.
 - A `/v1` permite publicar uma `/v2` incompatível convivendo com a `/v1`.
 - O contrato commitado mostra mudanças de API como diff na revisão.
