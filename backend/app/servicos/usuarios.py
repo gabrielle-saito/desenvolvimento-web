@@ -22,38 +22,72 @@ def obter(db: Session, usuario_id: int) -> User:
     return usuario
 
 
-def listar(db: Session, *, limit: int, offset: int) -> list[User]:
-    return repo_usuarios.listar(db, limit=limit, offset=offset)
+def listar(
+    db: Session,
+    *,
+    busca: str | None = None,
+    papel: Papel | None = None,
+    ativos: bool | None = None,
+    limit: int,
+    offset: int,
+) -> tuple[list[User], int]:
+    """Uma página da listagem e o total de itens (para a paginação)."""
+    filtros = {"busca": busca, "papel": papel, "ativos": ativos}
+    itens = repo_usuarios.listar(db, **filtros, limit=limit, offset=offset)
+    return itens, repo_usuarios.contar(db, **filtros)
 
 
 def criar(
     db: Session, ator: User | None, *, email: str, nome: str, senha: str, papel: Papel
 ) -> User:
-    """ator=None só no seed (não há ninguém logado criando o primeiro admin)."""
+    """Cadastro feito pelo admin (qualquer papel).
+    ator=None só no seed (não há ninguém logado criando o primeiro admin)."""
+    return _gravar_novo(
+        db, ator.id if ator else None, email=email, nome=nome, senha=senha, papel=papel
+    )
+
+
+def registrar(db: Session, *, email: str, nome: str, senha: str) -> User:
+    """Cadastro PÚBLICO (a própria pessoa se cadastra). O papel é sempre
+    colaborador, o de menor poder: ninguém se cadastra como admin. Promover
+    alguém continua sendo tarefa do admin (PATCH /v1/usuarios/{id})."""
+    return _gravar_novo(
+        db, None, email=email, nome=nome, senha=senha, papel=Papel.COLABORADOR, autocadastro=True
+    )
+
+
+def _gravar_novo(
+    db: Session,
+    ator_id: int | None,
+    *,
+    email: str,
+    nome: str,
+    senha: str,
+    papel: Papel,
+    autocadastro: bool = False,
+) -> User:
     usuario = User(
         email=email, nome=nome, hashed_password=hash_password(senha), papel=papel
     )
     repo_usuarios.adicionar(db, usuario)
+    tipo = "usuario.registrado" if autocadastro else "usuario.criado"
     # Quem garante e-mail único é a constraint do banco. Checar antes com um
     # SELECT não basta: duas requisições simultâneas passariam juntas.
     with traduzindo_erros_do_banco(db, mensagem_duplicado="E-mail já cadastrado."):
         db.flush()
+        if autocadastro:
+            ator_id = usuario.id  # quem fez o cadastro foi a própria pessoa
         auditoria.registrar(
             db,
-            tipo="usuario.criado",
-            ator_id=ator.id if ator else None,
+            tipo=tipo,
+            ator_id=ator_id,
             entidade="usuario",
             entidade_id=usuario.id,
             depois=auditoria.instantaneo_usuario(usuario),
         )
         db.commit()
     db.refresh(usuario)
-    log.info(
-        "usuario.criado",
-        novo_usuario_id=usuario.id,
-        papel=usuario.papel,
-        usuario_id=ator.id if ator else None,
-    )
+    log.info(tipo, novo_usuario_id=usuario.id, papel=usuario.papel, usuario_id=ator_id)
     return usuario
 
 

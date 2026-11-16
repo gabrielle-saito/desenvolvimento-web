@@ -1,8 +1,12 @@
-"""Salas (caso de uso 6). Leitura: qualquer usuário logado. Escrita: admin."""
+"""Salas (caso de uso 6): o "catálogo" do sistema, com busca, filtros e
+paginação. Leitura: qualquer usuário logado. Escrita: admin."""
+
+from typing import Annotated
 
 from fastapi import APIRouter, Query, Request, Response, status
 
 from app.api.deps import CurrentUser, DbSession, UsuarioAdmin
+from app.api.paginacao import DESCRICAO_TOTAL, HEADER_TOTAL, informar_total
 from app.models.sala import Sala
 from app.schemas.sala import SalaAtualizar, SalaCriar, SalaLeitura
 from app.servicos import salas as servico
@@ -10,15 +14,51 @@ from app.servicos import salas as servico
 router = APIRouter(prefix="/salas", tags=["salas"])
 
 
-@router.get("", response_model=list[SalaLeitura])
+@router.get(
+    "",
+    response_model=list[SalaLeitura],
+    responses={200: {"headers": {HEADER_TOTAL: DESCRICAO_TOTAL}}},
+)
 def listar_salas(
+    response: Response,
     db: DbSession,
     usuario: CurrentUser,
+    busca: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=100,
+            description="Parte do nome ou da localização (sem diferenciar maiúsculas)",
+            examples=["azul"],
+        ),
+    ] = None,
     ativas: bool | None = Query(default=None, description="true = só ativas; false = só inativas"),
-    limit: int = Query(default=50, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
+    capacidade_minima: Annotated[
+        int | None, Query(gt=0, description="Só salas para pelo menos N pessoas", examples=[6])
+    ] = None,
+    recurso: Annotated[
+        list[int],
+        Query(
+            description="Id de recurso. Repita para exigir vários: ?recurso=1&recurso=3",
+            examples=[[1]],
+        ),
+    ] = [],  # noqa: B006 (o FastAPI cria uma lista nova a cada requisição)
+    limit: int = Query(default=50, ge=1, le=100, description="Itens por página"),
+    offset: int = Query(default=0, ge=0, description="Quantos itens pular (página × limit)"),
 ) -> list[Sala]:
-    return servico.listar(db, ativas=ativas, limit=limit, offset=offset)
+    """Lista as salas em ordem alfabética. O total (sem paginação) vem no
+    cabeçalho **X-Total-Count**."""
+    salas, total = servico.listar(
+        db,
+        busca=busca,
+        ativas=ativas,
+        capacidade_minima=capacidade_minima,
+        recurso_ids=recurso,
+        limit=limit,
+        offset=offset,
+    )
+    informar_total(response, total)
+    return salas
 
 
 @router.post("", response_model=SalaLeitura, status_code=status.HTTP_201_CREATED)

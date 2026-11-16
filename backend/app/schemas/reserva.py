@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from app.dominio.enums import StatusReserva
 from app.schemas.comum import DataHoraComFuso, Entrada, Saida
@@ -9,6 +9,19 @@ from app.schemas.usuario import UsuarioResumo
 
 
 class ReservaCriar(Entrada):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "sala_id": 1,
+                    "inicio": "2030-03-10T14:00:00-03:00",
+                    "fim": "2030-03-10T15:00:00-03:00",
+                    "finalidade": "Planejamento da sprint",
+                }
+            ]
+        }
+    )
+
     # Sem usuario_id: o dono vem do token (e extra="forbid" recusa o campo).
     sala_id: int = Field(gt=0)
     inicio: DataHoraComFuso
@@ -17,6 +30,18 @@ class ReservaCriar(Entrada):
 
 
 class ReservaAtualizar(Entrada):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "versao": 1,
+                    "inicio": "2030-03-10T15:00:00-03:00",
+                    "fim": "2030-03-10T16:00:00-03:00",
+                }
+            ]
+        }
+    )
+
     # OBRIGATÓRIA: a versão que o cliente leu (locking otimista).
     versao: int = Field(ge=1)
     sala_id: int | None = Field(default=None, gt=0)

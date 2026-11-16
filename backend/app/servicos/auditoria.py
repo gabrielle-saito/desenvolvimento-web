@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.infra.request_id import request_id_atual
 from app.models.evento_auditoria import EventoAuditoria
+from app.models.recurso import Recurso
 from app.models.reserva import Reserva
 from app.models.sala import Sala
 from app.models.user import User
@@ -31,7 +32,12 @@ def instantaneo_reserva(r: Reserva) -> dict[str, Any]:
 
 def instantaneo_sala(s: Sala) -> dict[str, Any]:
     campos = ("nome", "capacidade", "localizacao", "descricao", "ativa")
-    return {c: getattr(s, c) for c in campos}
+    return {c: getattr(s, c) for c in campos} | {"recurso_ids": sorted(r.id for r in s.recursos)}
+
+
+def instantaneo_recurso(r: Recurso) -> dict[str, Any]:
+    campos = ("nome", "descricao", "ativo")
+    return {c: getattr(r, c) for c in campos}
 
 
 def instantaneo_usuario(u: User) -> dict[str, Any]:

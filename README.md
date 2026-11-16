@@ -15,7 +15,10 @@ disponibilidade.
 | --- | --- |
 | **colaborador** | consultar disponibilidade, ver a agenda de todos, reservar e editar/cancelar **as próprias** reservas |
 | **responsável** | tudo do colaborador + editar/cancelar **qualquer** reserva e ver a auditoria |
-| **admin** | tudo do responsável + cadastrar/editar/desativar **salas** e **usuários** (inclusive o papel) |
+| **admin** | tudo do responsável + cadastrar/editar/desativar **salas**, **recursos** e **usuários** (inclusive o papel) |
+
+Qualquer pessoa pode criar a própria conta (`POST /v1/auth/registro`): ela entra sempre como
+**colaborador**. Só o admin promove alguém a responsável ou admin.
 
 Regras principais:
 - Duas reservas ativas da mesma sala não podem se sobrepor. Reservas encostadas
@@ -41,13 +44,12 @@ cp .env.example .env            # Windows (PowerShell): copy .env.example .env
 
 # 3. Suba banco + API + site
 docker compose up --build -d
-
-# 4. Crie as tabelas
-docker compose exec api alembic upgrade head
-
-# 5. Crie o admin e os dados de demonstração
-docker compose exec api python -m app.scripts.seed
 ```
+
+Ao subir, a API **aplica as migrations e roda o seed sozinha** (o seed é idempotente: não
+duplica nada). Não há passo manual de banco. Se quiser rodar de novo à mão:
+`npm run setup` (ou `docker compose exec api alembic upgrade head` e
+`docker compose exec api python -m app.scripts.seed`).
 
 Pronto:
 
@@ -82,9 +84,11 @@ O seed é idempotente: pode rodar de novo sem duplicar nada.
 | `ana@empresa.com` | colaborador | `SEED_SENHA_DEMO` do `.env` |
 | `bruno@empresa.com` | colaborador | `SEED_SENHA_DEMO` do `.env` |
 
-O seed também cria 4 salas (Sala Azul, Sala Verde, Auditório, Sala Laranja) e algumas reservas
-para **amanhã**, para a agenda não começar vazia. Para criar outros usuários, entre como admin
-e use **Administração** no site (ou `POST /v1/usuarios`). Não existe cadastro público.
+O seed também cria **6 recursos** (projetor, TV, videoconferência, quadro branco, sistema de
+som, ar-condicionado), **15 salas** ligadas aos seus recursos e **15 reservas** para
+**amanhã**, para a agenda não começar vazia. As reservas só são criadas se o banco ainda não
+tiver nenhuma. Outros usuários: cadastro público (`POST /v1/auth/registro`, sempre
+colaborador) ou, pelo admin, **Administração** no site (`POST /v1/usuarios`, qualquer papel).
 
 ## Testes
 
@@ -102,6 +106,7 @@ Alembic automaticamente. O banco de desenvolvimento nunca é tocado.
 | `tests/test_migrations.py` | modelos e migrations batem (`alembic check`); downgrade e upgrade completos |
 | `tests/test_api_reservas.py` | 201 + Location, 409 de sobreposição, encostadas, cancelar libera, 403/responsável, versão velha, 422 sem fuso e com campo extra, sala inativa, agenda, disponibilidade, auditoria |
 | `tests/test_api_admin.py` | RBAC das rotas de admin (403/401), salas, usuários, login, Problem Details, request_id, 500 sem stack trace |
+| `tests/test_api_catalogo.py` | recursos (CRUD, 409, desativar), sala ↔ recurso (N:N), busca/filtros/paginação com `X-Total-Count`, cadastro público, exemplos no Swagger |
 | `tests/test_concorrencia.py` | 2 e 10 requisições **simultâneas** → exatamente uma 201; edições simultâneas → só uma vence |
 
 ## Rotas
@@ -111,23 +116,32 @@ Todas sob `/v1`, exceto `/health`. Os erros saem em **Problem Details** (`applic
 | Método | Rota | Quem | O que faz |
 | --- | --- | --- | --- |
 | GET | `/health` | — | API e banco respondendo |
+| POST | `/v1/auth/registro` | — | cadastro público (`email`, `nome`, `senha`) → 201, sempre colaborador; e-mail repetido → 409 |
 | POST | `/v1/auth/login` | — | formulário OAuth2 (`username`, `password`) → JWT |
 | GET | `/v1/auth/me` | logado | id, nome, email, papel |
-| GET | `/v1/usuarios` | admin | lista usuários |
+| GET | `/v1/usuarios?busca=&papel=&ativos=` | admin | lista usuários (busca no nome e no e-mail) |
 | POST | `/v1/usuarios` | admin | cria usuário → 201 + Location |
 | GET | `/v1/usuarios/{id}` | admin | lê um usuário |
 | PATCH | `/v1/usuarios/{id}` | admin | `nome`, `papel`, `is_active` |
-| GET | `/v1/salas?ativas=true` | logado | lista salas |
-| GET | `/v1/salas/{id}` | logado | lê uma sala |
-| POST | `/v1/salas` | admin | cria sala → 201 + Location; nome repetido → 409 |
-| PATCH | `/v1/salas/{id}` | admin | edita; `ativa=false` desativa |
+| GET | `/v1/salas?busca=&ativas=&capacidade_minima=&recurso=` | logado | catálogo de salas: busca no nome e na localização; `recurso` pode repetir (a sala precisa ter todos) |
+| GET | `/v1/salas/{id}` | logado | lê uma sala (com os recursos) |
+| POST | `/v1/salas` | admin | cria sala, com `recurso_ids` → 201 + Location; nome repetido → 409; recurso inexistente/desativado → 422 |
+| PATCH | `/v1/salas/{id}` | admin | edita; `ativa=false` desativa; `recurso_ids` substitui a lista de recursos |
+| GET | `/v1/recursos?busca=&ativos=` | logado | lista recursos (projetor, TV...) |
+| GET | `/v1/recursos/{id}` | logado | lê um recurso |
+| POST | `/v1/recursos` | admin | cria recurso → 201 + Location; nome repetido → 409 |
+| PATCH | `/v1/recursos/{id}` | admin | edita; `ativo=false` desativa (as salas que já têm continuam com ele) |
 | GET | `/v1/disponibilidade?inicio=&fim=&capacidade_minima=` | logado | cada sala ativa: livre ou não, e as reservas que conflitam |
-| GET | `/v1/reservas?sala_id=&de=&ate=&minhas=true&status=` | logado | agenda (todos veem), ordenada por início |
+| GET | `/v1/reservas?sala_id=&de=&ate=&minhas=true&status=&busca=` | logado | agenda (todos veem), ordenada por início; busca na finalidade |
 | GET | `/v1/reservas/{id}` | logado | lê uma reserva |
 | POST | `/v1/reservas` | logado | reserva → 201 + Location; 409 conflito; 422 período inválido |
 | PATCH | `/v1/reservas/{id}` | dono, responsável, admin | edita; corpo **exige `versao`** (locking otimista) |
 | POST | `/v1/reservas/{id}/cancelamento` | dono, responsável, admin | cancela (mudança de estado, não DELETE) → 200 |
 | GET | `/v1/auditoria?entidade=&entidade_id=` | responsável, admin | trilha de auditoria |
+
+**Paginação:** toda listagem aceita `limit` e `offset`, e devolve o total de itens (já com
+os filtros) no cabeçalho **`X-Total-Count`**. Ex.: `GET /v1/salas?limit=10&offset=10` é a
+página 2; com `X-Total-Count: 15`, são 2 páginas.
 
 Datas: **ISO 8601 com fuso** (ex.: `2030-01-31T14:00:00-03:00`). Data sem fuso → 422.
 As respostas vêm em UTC (`...Z`). Na query string, codifique o `+` do fuso como `%2B`.
@@ -204,7 +218,8 @@ backend/
 ├── app/
 │   ├── main.py         cria a app: handlers de erro, CORS, request_id, rotas
 │   ├── api/
-│   │   ├── v1/         rotas (auth, usuarios, salas, disponibilidade, reservas, auditoria)
+│   │   ├── v1/         rotas (auth, usuarios, salas, recursos, disponibilidade, reservas, auditoria)
+│   │   ├── paginacao.py  cabeçalho X-Total-Count
 │   │   ├── deps.py     get_db, get_current_user, exigir_papel(...)
 │   │   └── erros.py    Problem Details: um handler por família de exceção
 │   ├── schemas/        DTOs Pydantic (entrada extra="forbid", saída from_attributes)
@@ -231,5 +246,5 @@ postman/                collection + environment
 - [Cenários de qualidade](docs/cenarios-qualidade.md)
 
 Fora do escopo: integração com Outlook/Google Calendar, notificações, controle de acesso
-físico, equipamentos das salas, reserva de veículos/equipamentos, app mobile nativo e
+físico, reserva de veículos/equipamentos, app mobile nativo e
 relatórios avançados.

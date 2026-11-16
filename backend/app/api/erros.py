@@ -30,6 +30,7 @@ from app.dominio.excecoes import (
     NaoEncontrado,
     OperacaoProibida,
     PeriodoInvalido,
+    RecursoInvalido,
     ReservaNaoAlteravel,
     SalaInativa,
     VersaoDesatualizada,
@@ -80,6 +81,12 @@ def tratar_acesso_negado(request: Request, exc: AcessoNegado) -> JSONResponse:
 def tratar_periodo_invalido(request: Request, exc: PeriodoInvalido) -> JSONResponse:
     return resposta_problema(
         request, 422, exc.mensagem, tipo="/problemas/periodo-invalido", title="Período inválido"
+    )
+
+
+def tratar_recurso_invalido(request: Request, exc: RecursoInvalido) -> JSONResponse:
+    return resposta_problema(
+        request, 422, exc.mensagem, tipo="/problemas/recurso-invalido", title="Recurso inválido"
     )
 
 
@@ -211,6 +218,7 @@ def registrar_handlers(app: FastAPI) -> None:
     app.add_exception_handler(NaoEncontrado, tratar_nao_encontrado)
     app.add_exception_handler(AcessoNegado, tratar_acesso_negado)
     app.add_exception_handler(PeriodoInvalido, tratar_periodo_invalido)
+    app.add_exception_handler(RecursoInvalido, tratar_recurso_invalido)
     app.add_exception_handler(Conflito, tratar_conflito)
     app.add_exception_handler(RequestValidationError, tratar_validacao)
     app.add_exception_handler(StarletteHTTPException, tratar_http)

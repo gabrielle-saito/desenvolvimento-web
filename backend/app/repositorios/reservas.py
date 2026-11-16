@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import ColumnElement, func, literal, select
+from sqlalchemy import ColumnElement, Select, func, literal, select
 from sqlalchemy.orm import Session
 
 from app.dominio.enums import StatusReserva
@@ -28,17 +28,15 @@ def versao_atual(db: Session, reserva_id: int) -> int | None:
     return db.scalar(select(Reserva.versao).where(Reserva.id == reserva_id))
 
 
-def listar(
-    db: Session,
+def _filtrado(
     *,
-    sala_id: int | None = None,
-    de: datetime | None = None,
-    ate: datetime | None = None,
-    usuario_id: int | None = None,
-    status: StatusReserva | None = None,
-    limit: int,
-    offset: int,
-) -> list[Reserva]:
+    sala_id: int | None,
+    de: datetime | None,
+    ate: datetime | None,
+    usuario_id: int | None,
+    status: StatusReserva | None,
+    busca: str | None,
+) -> Select[tuple[Reserva]]:
     stmt = select(Reserva)
     if sala_id is not None:
         stmt = stmt.where(Reserva.sala_id == sala_id)
@@ -52,8 +50,44 @@ def listar(
         stmt = stmt.where(Reserva.usuario_id == usuario_id)
     if status is not None:
         stmt = stmt.where(Reserva.status == status)
+    if busca:
+        stmt = stmt.where(Reserva.finalidade.icontains(busca, autoescape=True))
+    return stmt
+
+
+def listar(
+    db: Session,
+    *,
+    sala_id: int | None = None,
+    de: datetime | None = None,
+    ate: datetime | None = None,
+    usuario_id: int | None = None,
+    status: StatusReserva | None = None,
+    busca: str | None = None,
+    limit: int,
+    offset: int,
+) -> list[Reserva]:
+    stmt = _filtrado(
+        sala_id=sala_id, de=de, ate=ate, usuario_id=usuario_id, status=status, busca=busca
+    )
     stmt = stmt.order_by(Reserva.inicio, Reserva.id).limit(limit).offset(offset)
     return list(db.scalars(stmt))
+
+
+def contar(
+    db: Session,
+    *,
+    sala_id: int | None = None,
+    de: datetime | None = None,
+    ate: datetime | None = None,
+    usuario_id: int | None = None,
+    status: StatusReserva | None = None,
+    busca: str | None = None,
+) -> int:
+    stmt = _filtrado(
+        sala_id=sala_id, de=de, ate=ate, usuario_id=usuario_id, status=status, busca=busca
+    )
+    return db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
 
 
 def ativas_que_conflitam(

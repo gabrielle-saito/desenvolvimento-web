@@ -31,6 +31,21 @@ const partesFormato = new Intl.DateTimeFormat("en-CA", {
 export const hora = (iso) => formatoHora.format(new Date(iso));
 export const data = (iso) => formatoData.format(new Date(iso));
 
+// "2026-11-12" -> "Quinta-feira, 12 de novembro de 2026". A data é um dia do
+// calendário (sem hora), então é formatada em UTC para não mudar de dia.
+const formatoExtenso = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "UTC",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+export function dataPorExtenso(dataTexto) {
+  const [ano, mes, dia] = dataTexto.split("-").map(Number);
+  const texto = formatoExtenso.format(new Date(Date.UTC(ano, mes - 1, dia, 12)));
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 // Partes (ano, mês, dia, hora, minuto) de um instante, vistas em São Paulo.
 function partesEmSaoPaulo(instante) {
   const p = Object.fromEntries(partesFormato.formatToParts(instante).map((x) => [x.type, x.value]));

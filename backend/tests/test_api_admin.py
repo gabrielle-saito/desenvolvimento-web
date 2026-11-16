@@ -13,6 +13,8 @@ ROTAS_DE_ADMIN = [
     ("patch", "/v1/usuarios/1", {"nome": "Y"}),
     ("post", "/v1/salas", {"nome": "Nova", "capacidade": 4}),
     ("patch", "/v1/salas/1", {"ativa": False}),
+    ("post", "/v1/recursos", {"nome": "Projetor"}),
+    ("patch", "/v1/recursos/1", {"ativo": False}),
 ]
 
 
@@ -142,7 +144,8 @@ def test_admin_nao_pode_se_desativar_nem_tirar_o_proprio_papel(client, admin) ->
         assert r.json()["type"] == "/problemas/operacao-proibida"
 
 
-def test_register_publico_nao_existe_mais(client) -> None:
+def test_rota_antiga_register_em_ingles_nao_existe(client) -> None:
+    # O cadastro público é POST /v1/auth/registro (ver test_api_catalogo.py).
     r = client.post("/v1/auth/register", json={"email": "a@a.com", "password": "12345678"})
     assert r.status_code in (404, 405)
     assert client.post("/auth/register", json={}).status_code == 404

@@ -4,30 +4,52 @@ import { api, mensagemDeErro } from "./api.js";
 import { el } from "./dom.js";
 import { limparSessao, obterToken, salvarSessao, temPapel } from "./sessao.js";
 
-const NOME_PAPEL = { colaborador: "Colaborador", responsavel: "Responsável", admin: "Admin" };
+const NOME_PAPEL = { colaborador: "Colaborador(a)", responsavel: "Responsável", admin: "Administrador(a)" };
 
+// "Salas" e "Usuários" são as duas seções da página de administração.
 const MENU = [
   { href: "agenda.html", texto: "Agenda", papel: "colaborador" },
-  { href: "reservar.html", texto: "Consultar e reservar", papel: "colaborador" },
+  { href: "reservar.html", texto: "Reservar sala", papel: "colaborador" },
   { href: "minhas.html", texto: "Minhas reservas", papel: "colaborador" },
   { href: "responsavel.html", texto: "Gerenciar reservas", papel: "responsavel" },
-  { href: "admin.html", texto: "Administração", papel: "admin" },
+  { href: "admin.html#titulo-salas", texto: "Salas", papel: "admin" },
+  { href: "admin.html#titulo-usuarios", texto: "Usuários", papel: "admin" },
 ];
 
+// Qual item do menu é a página atual. Na administração, decide pelo #:
+// sem # (ou com outro), conta como "Salas", a primeira seção.
+function itemAtual(itens) {
+  const pagina = window.location.pathname.split("/").pop() || "index.html";
+  const daPagina = itens.filter((i) => i.href.split("#")[0] === pagina);
+  return daPagina.find((i) => i.href.endsWith(window.location.hash || "#")) || daPagina[0];
+}
+
+function marcarAtual(lista, itens) {
+  const atual = itemAtual(itens);
+  for (const link of lista.querySelectorAll("a")) {
+    if (link.getAttribute("href") === atual?.href) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+}
+
 function montarMenu(usuario) {
-  const atual = window.location.pathname.split("/").pop();
-  const itens = MENU.filter((i) => temPapel(usuario, i.papel)).map((i) =>
-    el(
-      "li",
-      {},
-      el("a", { href: i.href, "aria-current": i.href === atual ? "page" : undefined }, i.texto),
-    ),
+  const itens = MENU.filter((i) => temPapel(usuario, i.papel));
+  const lista = el(
+    "ul",
+    {},
+    itens.map((i) => el("li", {}, el("a", { href: i.href }, i.texto))),
   );
+  marcarAtual(lista, itens);
+  window.addEventListener("hashchange", () => marcarAtual(lista, itens));
+  document.getElementById("menu").replaceChildren(lista);
+
+  // Avatar, nome, papel e "Sair" ficam fora do <nav>, à direita da barra.
+  document.querySelector(".topo .usuario-logado")?.remove();
   const sair = el(
     "button",
     {
       type: "button",
-      class: "botao-link",
+      class: "botao-fantasma",
       onclick: () => {
         limparSessao();
         window.location.href = "login.html";
@@ -35,17 +57,27 @@ function montarMenu(usuario) {
     },
     "Sair",
   );
-  document.getElementById("menu").replaceChildren(
-    el("ul", {}, itens),
+  document.getElementById("menu").after(
     el(
-      "p",
+      "div",
       { class: "usuario-logado" },
-      el("span", {}, `${usuario.nome} `),
-      el("span", { class: "etiqueta" }, NOME_PAPEL[usuario.papel] || usuario.papel),
-      " ",
+      el("span", { class: "avatar", "aria-hidden": "true" }, iniciais(usuario.nome)),
+      el(
+        "span",
+        { class: "usuario-texto" },
+        el("strong", {}, usuario.nome),
+        el("span", { class: "usuario-papel" }, NOME_PAPEL[usuario.papel] || usuario.papel),
+      ),
       sair,
     ),
   );
+}
+
+// "Mariana Souza" -> "MS"; "Ana" -> "A".
+function iniciais(nome) {
+  const partes = String(nome).trim().split(/\s+/).filter(Boolean);
+  const letras = partes.length > 1 ? [partes[0], partes[partes.length - 1]] : partes;
+  return letras.map((p) => p[0].toUpperCase()).join("");
 }
 
 // Chame no início de cada página protegida. Devolve o usuário logado, ou

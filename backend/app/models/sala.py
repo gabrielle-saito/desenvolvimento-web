@@ -10,9 +10,10 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.recurso import Recurso, sala_recursos
 
 
 class Sala(Base):
@@ -36,4 +37,10 @@ class Sala(Base):
     ativa: Mapped[bool] = mapped_column(Boolean, server_default="true")
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+    # N:N com recursos (pela tabela sala_recursos). selectin: os recursos de
+    # todas as salas de uma listagem vêm numa consulta só (sem N+1).
+    recursos: Mapped[list[Recurso]] = relationship(
+        secondary=sala_recursos, lazy="selectin", order_by=Recurso.nome
     )

@@ -17,13 +17,13 @@ com todas as rotas sob **`/v1`**.
 
 | Tema | Decisão |
 | --- | --- |
-| Recursos | substantivos no plural: `/v1/salas`, `/v1/reservas`, `/v1/usuarios`, `/v1/auditoria` |
+| Recursos | substantivos no plural: `/v1/salas`, `/v1/recursos`, `/v1/reservas`, `/v1/usuarios`, `/v1/auditoria` |
 | Criação | `POST` → **201 Created + header `Location`** com a URL do novo recurso |
 | Alteração | `PATCH` parcial (`exclude_unset`); o PATCH de reserva **exige `versao`** (ver ADR-003) |
 | Cancelamento | `POST /v1/reservas/{id}/cancelamento` → 200 com a reserva cancelada. É **mudança de estado**, não `DELETE`: o histórico fica |
-| Paginação | `limit`/`offset` com teto (100 a 500 conforme a rota), como na base |
+| Paginação | `limit`/`offset` com teto (100 a 500 conforme a rota), como na base. O total (já filtrado) vai no cabeçalho `X-Total-Count`: o corpo continua sendo a lista, então nenhum cliente quebra |
 | Autenticação | OAuth2 password flow → JWT (`POST /v1/auth/login`); `tokenUrl` atualizado para `/v1/auth/login` |
-| Cadastro de usuários | `POST /v1/usuarios` **só para admin**; o `POST /auth/register` público foi **removido** (sistema interno) |
+| Cadastro de usuários | Público: `POST /v1/auth/registro`, **sempre como colaborador** (o corpo não aceita `papel`). Admin: `POST /v1/usuarios`, com qualquer papel. A rota antiga em inglês `POST /auth/register` não existe mais |
 | Erros | **Problem Details (RFC 9457)**, `application/problem+json`, um handler por família de exceção de domínio |
 | Datas | ISO 8601 **com fuso** na entrada (`AwareDatetime`; sem fuso → 422), sempre UTC na saída |
 | Contrato | `contrato/openapi.json` exportado por script e commitado |
