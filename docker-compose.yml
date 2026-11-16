@@ -1,5 +1,5 @@
 # Reserva de Salas — ambiente de desenvolvimento
-# Sobe: PostgreSQL 16 + API FastAPI com hot reload + site estático (web).
+# Sobe: PostgreSQL 16 + API FastAPI com hot reload + front-end React/Vite (web).
 # Uso: docker compose up --build   (migrations e seed rodam sozinhos)
 
 services:
@@ -53,19 +53,29 @@ services:
       && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log"
 
   web:
-    # Front-end estático (HTML + CSS + JS puro, sem build). Um servidor de
-    # arquivos basta: toda a lógica de negócio está na API.
-    image: python:3.12-slim
-    working_dir: /srv
+    # Front-end React (Vite) em modo de desenvolvimento, com recarga
+    # automática ao salvar um arquivo.
+    image: node:22-alpine
+    working_dir: /app
+    environment:
+      # Endereço da API como o NAVEGADOR a enxerga (não o nome "api" da rede
+      # do Compose: quem chama a API é o navegador, fora dos containers).
+      VITE_API_URL: http://localhost:8000
+      # Recarga automática em Windows/WSL2 e macOS (bind mount sem eventos).
+      VITE_POLLING: "true"
     volumes:
-      # Somente leitura: o container só serve os arquivos.
-      - ./frontend:/srv:ro
+      - ./frontend:/app
+      # node_modules fica num volume do container: não mistura com o do
+      # seu computador (outro sistema operacional, outros binários).
+      - web_node_modules:/app/node_modules
     ports:
       # 5173 é a origem liberada em CORS_ORIGINS no .env.
       - "5173:5173"
-    command: python -m http.server 5173 --bind 0.0.0.0
+    # npm ci instala exatamente as versões do package-lock.json.
+    command: sh -c "npm ci --no-audit --no-fund && npm run dev"
     depends_on:
       - api
 
 volumes:
   pgdata:
+  web_node_modules:
