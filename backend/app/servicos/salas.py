@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import structlog
 from sqlalchemy.orm import Session
 
@@ -6,6 +8,7 @@ from app.models.sala import Sala
 from app.models.user import User
 from app.repositorios import salas as repo_salas
 from app.servicos import auditoria
+from app.servicos import recursos as servico_recursos
 from app.servicos._transacao import traduzindo_erros_do_banco
 
 CAMPOS_EDITAVEIS = {"nome", "capacidade", "localizacao", "descricao", "ativa"}
@@ -21,8 +24,24 @@ def obter(db: Session, sala_id: int) -> Sala:
     return sala
 
 
-def listar(db: Session, *, ativas: bool | None, limit: int, offset: int) -> list[Sala]:
-    return repo_salas.listar(db, ativas=ativas, limit=limit, offset=offset)
+def listar(
+    db: Session,
+    *,
+    busca: str | None = None,
+    ativas: bool | None = None,
+    capacidade_minima: int | None = None,
+    recurso_ids: Sequence[int] = (),
+    limit: int,
+    offset: int,
+) -> tuple[list[Sala], int]:
+    """Catálogo de salas: uma página e o total de itens (para a paginação)."""
+    filtros = {
+        "busca": busca,
+        "ativas": ativas,
+        "capacidade_minima": capacidade_minima,
+        "recurso_ids": recurso_ids,
+    }
+    return repo_salas.listar(db, **filtros, limit=limit, offset=offset), repo_salas.contar(db, **filtros)
 
 
 def criar(
@@ -33,8 +52,15 @@ def criar(
     capacidade: int,
     localizacao: str | None,
     descricao: str | None,
+    recurso_ids: Sequence[int] = (),
 ) -> Sala:
-    sala = Sala(nome=nome, capacidade=capacidade, localizacao=localizacao, descricao=descricao)
+    sala = Sala(
+        nome=nome,
+        capacidade=capacidade,
+        localizacao=localizacao,
+        descricao=descricao,
+        recursos=servico_recursos.para_sala(db, recurso_ids),
+    )
     repo_salas.adicionar(db, sala)
     with traduzindo_erros_do_banco(db, mensagem_duplicado=MSG_NOME_DUPLICADO):
         db.flush()
@@ -60,6 +86,12 @@ def atualizar(db: Session, ator: User, sala_id: int, alteracoes: dict) -> Sala:
     for campo, valor in alteracoes.items():
         if campo in CAMPOS_EDITAVEIS:
             setattr(sala, campo, valor)
+    if alteracoes.get("recurso_ids") is not None:
+        # Substitui a lista inteira: o SQLAlchemy calcula o que inserir e o
+        # que apagar em sala_recursos (na mesma transação da sala).
+        sala.recursos = servico_recursos.para_sala(
+            db, alteracoes["recurso_ids"], atuais=sala.recursos
+        )
     # O evento diz o que aconteceu de mais importante: desativar/reativar
     # é diferente de corrigir a capacidade.
     if antes["ativa"] and not sala.ativa:

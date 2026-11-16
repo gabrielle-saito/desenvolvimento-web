@@ -7,6 +7,7 @@ from app.api import v1
 from app.api.deps import DbSession
 from app.api.erros import registrar_handlers
 from app.api.openapi import instalar_openapi
+from app.api.paginacao import HEADER_TOTAL
 from app.core.config import settings
 from app.infra.logging_config import configurar_logging
 from app.infra.request_id import HEADER as HEADER_REQUEST_ID
@@ -33,7 +34,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", HEADER_REQUEST_ID],
     # Sem expose_headers, o JavaScript do navegador NÃO consegue ler estes
     # headers da resposta (o CORS esconde tudo que não é "simples").
-    expose_headers=["Location", HEADER_REQUEST_ID],
+    expose_headers=["Location", HEADER_TOTAL, HEADER_REQUEST_ID],
 )
 
 # Adicionado POR ÚLTIMO = o middleware MAIS EXTERNO: o request_id já existe

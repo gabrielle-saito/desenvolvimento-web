@@ -69,7 +69,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 FUSO_SP = ZoneInfo("America/Sao_Paulo")
-TABELAS = "eventos_auditoria, reservas, salas, users"
+TABELAS = "eventos_auditoria, reservas, sala_recursos, recursos, salas, users"
 
 
 @pytest.fixture

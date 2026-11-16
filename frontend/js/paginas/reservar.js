@@ -109,7 +109,9 @@ async function consultar() {
 
 const usuario = await iniciarPagina();
 if (usuario) {
-  form.data.value = datas.hojeEmSaoPaulo();
+  // Vindo da Agenda ("Reservar sala"), já abre no dia que estava aberto lá.
+  const dataDaAgenda = new URLSearchParams(window.location.search).get("data");
+  form.data.value = /^\d{4}-\d{2}-\d{2}$/.test(dataDaAgenda ?? "") ? dataDaAgenda : datas.hojeEmSaoPaulo();
   form.addEventListener("submit", (evento) => {
     evento.preventDefault();
     avisar(avisos, "");

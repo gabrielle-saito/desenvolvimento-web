@@ -46,20 +46,22 @@ def listar(
     ate: datetime | None,
     minhas: bool,
     status: StatusReserva | None,
+    busca: str | None = None,
     limit: int,
     offset: int,
-) -> list[Reserva]:
-    # A agenda é visível para a empresa toda; "minhas" só filtra.
-    return repo_reservas.listar(
-        db,
-        sala_id=sala_id,
-        de=de,
-        ate=ate,
-        usuario_id=ator.id if minhas else None,
-        status=status,
-        limit=limit,
-        offset=offset,
-    )
+) -> tuple[list[Reserva], int]:
+    """Uma página da listagem e o total de itens (para a paginação).
+    A agenda é visível para a empresa toda; "minhas" só filtra."""
+    filtros = {
+        "sala_id": sala_id,
+        "de": de,
+        "ate": ate,
+        "usuario_id": ator.id if minhas else None,
+        "status": status,
+        "busca": busca,
+    }
+    itens = repo_reservas.listar(db, **filtros, limit=limit, offset=offset)
+    return itens, repo_reservas.contar(db, **filtros)
 
 
 def _checar_conflito(

@@ -29,6 +29,10 @@ class PeriodoInvalido(ErroDeDominio):
     """Início/fim fora das regras (passado, invertido, curto ou longo demais)."""
 
 
+class RecursoInvalido(ErroDeDominio):
+    """Sala com recurso que não existe ou que está desativado."""
+
+
 # --- Família "o estado atual não permite" (conflito) ----------------------
 class Conflito(ErroDeDominio):
     """Base dos conflitos com o estado atual do sistema."""
