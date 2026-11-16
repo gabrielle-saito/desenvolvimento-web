@@ -251,6 +251,7 @@ frontend/               React + Vite (ver "Front-end" abaixo)
 contrato/openapi.json   contrato exportado
 docs/adr/               decisões de arquitetura
 docs/cenarios-qualidade.md
+docs/modelo-de-dados.md DER + modelo lógico (imagens em docs/img/)
 postman/                collection + environment
 ```
 
@@ -292,6 +293,7 @@ Para rodar fora do Docker: `cd frontend && npm install && npm run dev`.
 
 ## Documentação
 
+- [Modelo de dados — DER e modelo lógico](docs/modelo-de-dados.md)
 - [ADR-001 — Monolito modular](docs/adr/ADR-001-monolito-modular.md)
 - [ADR-002 — API REST v1](docs/adr/ADR-002-api-rest-v1.md)
 - [ADR-003 — Concorrência e tempo real](docs/adr/ADR-003-concorrencia-e-tempo-real.md)
