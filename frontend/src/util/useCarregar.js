@@ -27,6 +27,6 @@ export function useCarregar(buscar, deps) {
 // Título da aba do navegador.
 export function useTitulo(titulo) {
   useEffect(() => {
-    document.title = titulo ? `${titulo} · Reserva de Salas` : "Reserva de Salas";
+    document.title = titulo ? `${titulo} · Veritas Reserva de Salas` : "Veritas Reserva de Salas";
   }, [titulo]);
 }

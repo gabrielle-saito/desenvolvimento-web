@@ -21,7 +21,7 @@ def main() -> None:
     por_usuario = int(os.environ.get("CARGA_REQUISICOES", "20"))
     login = httpx.post(
         f"{base}/v1/auth/login",
-        data={"username": "ana@empresa.com", "password": os.environ["SEED_SENHA_DEMO"]},
+        data={"username": "ste@veritas.com", "password": "1234"},  # conta do seed
     )
     login.raise_for_status()
     token = login.json()["access_token"]

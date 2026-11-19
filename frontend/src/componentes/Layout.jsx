@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router";
 
+import logoVeritas from "../assets/logo-veritas.png";
 import { useAuth } from "../contexto/AuthContext.jsx";
 
 const NOME_PAPEL = { colaborador: "Colaborador(a)", responsavel: "Responsável", admin: "Administrador(a)" };
@@ -32,7 +33,7 @@ export default function Layout() {
       </a>
       <header className="topo">
         <Link className="marca" to="/agenda">
-          Reserva de Salas
+          <img src={logoVeritas} alt="Veritas" width="132" height="32" />
         </Link>
         <nav id="menu" aria-label="Menu principal">
           <ul>

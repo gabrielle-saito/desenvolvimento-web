@@ -1,10 +1,12 @@
-# Reserva de Salas
+<img src="frontend/src/assets/logo-veritas.png" alt="Veritas" width="298">
+
+# Veritas · Reserva de Salas
 
 [![CI](https://github.com/gabrielle-saito/desenvolvimento-web/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielle-saito/desenvolvimento-web/actions/workflows/ci.yml)
 
-Sistema web de **reserva de salas de reunião** de uma empresa. Ele substitui a planilha Excel
-que causava conflitos de horário, informação desatualizada e dificuldade de ver a
-disponibilidade.
+Sistema web de **reserva de salas de reunião** da **Veritas**, empresa fictícia criada para
+este trabalho. Ele substitui a planilha Excel que causava conflitos de horário, informação
+desatualizada e dificuldade de ver a disponibilidade.
 
 - **Back-end:** FastAPI + PostgreSQL 16 + SQLAlchemy 2 + Alembic, com JWT (pyjwt + Argon2)
 - **Front-end:** React 19 + Vite + React Router, em `frontend/`. Sessão compartilhada com Context API
@@ -42,7 +44,7 @@ cp .env.example .env            # Windows (PowerShell): copy .env.example .env
 #    - SECRET_KEY: gere uma chave (mínimo 32 caracteres; a API NÃO sobe sem ela)
 #        python -c "import secrets; print(secrets.token_urlsafe(48))"
 #        sem Python local: docker compose run --rm --no-deps api python -c "import secrets; print(secrets.token_urlsafe(48))"
-#    - POSTGRES_PASSWORD, SEED_ADMIN_SENHA: troque os valores de exemplo
+#    - POSTGRES_PASSWORD: troque o valor de exemplo
 
 # 3. Suba banco + API + site
 docker compose up --build -d
@@ -75,21 +77,30 @@ Docker Compose, então não há `npm install` nem dependências Node.
 | `npm run down` | derruba os containers (mantém os dados) |
 | `npm run openapi` | regera `contrato/openapi.json` |
 
-### Usuários criados pelo seed
+### Contas de demonstração
 
-O seed é idempotente: pode rodar de novo sem duplicar nada.
+O seed cria quatro contas: um admin, um responsável e dois colaboradores. Todas têm a senha **`1234`**. As senhas ficam à vista
+de propósito: é um trabalho acadêmico, e todo o grupo entra com as mesmas contas. A senha curta
+só existe no seed; pela API, o cadastro e a criação de usuário exigem no mínimo 8 caracteres.
 
-| E-mail | Papel | Senha |
-| --- | --- | --- |
-| valor de `SEED_ADMIN_EMAIL` (padrão `admin@empresa.com`) | admin | `SEED_ADMIN_SENHA` do `.env` |
-| `rita@empresa.com` | responsável | `SEED_SENHA_DEMO` do `.env` |
-| `ana@empresa.com` | colaborador | `SEED_SENHA_DEMO` do `.env` |
-| `bruno@empresa.com` | colaborador | `SEED_SENHA_DEMO` do `.env` |
+| E-mail | Nome | Papel | Senha |
+| --- | --- | --- | --- |
+| `gabi@veritas.com` | Gabi | admin | `1234` |
+| `manu@veritas.com` | Manu | responsável | `1234` |
+| `ste@veritas.com` | Ste | colaborador | `1234` |
+| `colaborador@veritas.com` | Colaborador | colaborador | `1234` |
 
-O seed também cria **6 recursos** (projetor, TV, videoconferência, quadro branco, sistema de
-som, ar-condicionado), **15 salas** ligadas aos seus recursos e **15 reservas** para
-**amanhã**, para a agenda não começar vazia. As reservas só são criadas se o banco ainda não
-tiver nenhuma. Outros usuários: cadastro público (`POST /v1/auth/registro`, sempre
+O seed também cria **5 recursos** (projetor, TV, quadro branco, sistema de som,
+ar-condicionado), **15 salas** ligadas aos seus recursos e **reservas das quatro contas
+espalhadas pelos dias úteis de dezembro/2026 e janeiro/2027** (sem 24, 25 e 31/12 e 1º/1),
+algumas já canceladas para aparecer o histórico. As reservas saem sempre iguais em qualquer
+computador e só são criadas se o banco ainda não tiver nenhuma; datas que já passaram são puladas.
+
+O seed é idempotente: pode rodar de novo sem duplicar nada. Ele não altera o que já existe, então
+quem tinha o banco com as contas antigas precisa zerá-lo uma vez:
+`docker compose down -v && docker compose up` (apaga os dados locais).
+
+Outros usuários: cadastro público (`POST /v1/auth/registro`, sempre
 colaborador) ou, pelo admin, **Administração** no site (`POST /v1/usuarios`, qualquer papel).
 
 ## Testes
@@ -198,8 +209,7 @@ O 422 de validação traz `"erros": [{"campo": "inicio", "local": "body", "mensa
 ## Postman
 
 Importe os dois arquivos de [`postman/`](postman/) e selecione o environment
-**Reserva de Salas local**. Ajuste `admin_senha` e `senha_demo` para os valores do seu `.env`
-e rode a collection inteira no Runner. São 44 requisições e 94 testes: o fluxo completo e os
+**Reserva de Salas local** (já vem com as contas do seed) e rode a collection inteira no Runner. São 44 requisições e 94 testes: o fluxo completo e os
 casos de erro. A collection limpa as próprias reservas no fim, então pode rodar de novo.
 
 ## Observabilidade e auditoria
@@ -293,8 +303,13 @@ frontend/src/
 ├── componentes/        Layout, RotaProtegida, Campo, Paginacao, Janela, TabelaReservas,
 │                       CartaoSala, FormSala, SeletorRecursos, Aviso, Carregando...
 ├── paginas/            uma tela por arquivo (admin/ tem as abas da administração)
+├── assets/             logos da Veritas usados no site
 └── util/               datas (fuso de São Paulo), useCarregar (carregando/erro/dados)
 ```
+
+Identidade visual: logos da Veritas (em `frontend/src/assets/`, favicon em `frontend/public/`)
+e a cor vinho **#5A1A3C** (rgb 90, 26, 60), definida uma vez em
+`--primaria` no `estilo.css`.
 
 - **Rotas protegidas nos dois lados:** `RotaProtegida` leva quem não entrou para o login e
   mostra "Acesso negado" a quem não tem o papel. É só conforto: quem bloqueia é a API (401/403).

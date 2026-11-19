@@ -17,7 +17,7 @@ const DATA_VALIDA = /^\d{4}-\d{2}-\d{2}$/;
 function CartaoDisponibilidade({ item, aoReservar, reservando }) {
   const { sala, livre, reservas_conflitantes: conflitos } = item;
   return (
-    <article className={`cartao sala ${livre ? "sala-livre" : "sala-ocupada"}`}>
+    <article className={`cartao sala cartao-vinho cartao-disponibilidade ${livre ? "sala-livre" : "sala-ocupada"}`}>
       <h3>{sala.nome}</h3>
       <p className="discreto">
         {sala.capacidade} pessoas{sala.localizacao ? ` · ${sala.localizacao}` : ""}
@@ -27,8 +27,8 @@ function CartaoDisponibilidade({ item, aoReservar, reservando }) {
       {livre ? (
         <>
           <p className="livre">Livre neste horário</p>
-          <button type="button" className="primario" onClick={() => aoReservar(sala)} disabled={reservando}>
-            Reservar {sala.nome}
+          <button type="button" className="primario botao-reservar" onClick={() => aoReservar(sala)} disabled={reservando} aria-label={`Reservar ${sala.nome}`}>
+            Reservar
           </button>
         </>
       ) : (

@@ -1074,7 +1074,7 @@
         "additionalProperties": false,
         "examples": [
           {
-            "email": "carla@empresa.com",
+            "email": "carla@veritas.com",
             "nome": "Carla Souza",
             "papel": "responsavel",
             "senha": "uma-senha-forte"
@@ -1184,7 +1184,7 @@
         "description": "Cadastro público. Sem campo \"papel\": quem se cadastra é colaborador\n(e extra=\"forbid\" recusa com 422 quem tentar mandar \"papel\": \"admin\").",
         "examples": [
           {
-            "email": "daniel@empresa.com",
+            "email": "daniel@veritas.com",
             "nome": "Daniel Lima",
             "senha": "uma-senha-forte"
           }
@@ -1429,7 +1429,7 @@
     },
     "/v1/auth/login": {
       "post": {
-        "description": "Recebe application/x-www-form-urlencoded com os campos\n\"username\" (o e-mail) e \"password\" — é o formato do padrão OAuth2.\n\nExemplo (curl):\n`curl -X POST /v1/auth/login -d \"username=ana@empresa.com&password=senha-demo-123\"`\n\nResposta: `{\"access_token\": \"eyJ...\", \"token_type\": \"bearer\"}`. Envie o\ntoken nas outras rotas no cabeçalho `Authorization: Bearer <token>`\n(no Swagger: botão **Authorize**).",
+        "description": "Recebe application/x-www-form-urlencoded com os campos\n\"username\" (o e-mail) e \"password\" — é o formato do padrão OAuth2.\n\nExemplo (curl):\n`curl -X POST /v1/auth/login -d \"username=ste@veritas.com&password=1234\"`\n\nResposta: `{\"access_token\": \"eyJ...\", \"token_type\": \"bearer\"}`. Envie o\ntoken nas outras rotas no cabeçalho `Authorization: Bearer <token>`\n(no Swagger: botão **Authorize**).",
         "operationId": "login_v1_auth_login_post",
         "requestBody": {
           "content": {

@@ -1,43 +1,45 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400..700&display=swap");
 
-/* Reserva de Salas — estilo único, sem framework.
+/* Veritas · Reserva de Salas — estilo único, sem framework.
    Acessibilidade: contraste AA nas cores de texto, foco sempre visível,
    alvos de toque com pelo menos 44px, respeita "reduzir movimento".
 
-   Identidade: fundo branco, roxo #5b2fd6. O site é sempre claro (não muda
-   com o modo escuro do sistema). Verde (livre) e vermelho (erro/cancelar)
-   continuam: carregam significado. */
+   Identidade Veritas: fundo branco e vinho #5A1A3C (rgb 90, 26, 60), a cor
+   do logo. O site é sempre claro (não muda com o modo escuro do sistema).
+   Verde (livre) e vermelho (erro/cancelar) continuam: carregam significado. */
 :root {
   --fundo: #ffffff;
-  --fundo-suave: #f7f5fc;
+  --fundo-suave: #faf6f8;
   --superficie: #ffffff;
-  --texto: #1c1630;
-  --discreto: #625b78;
-  --borda: #e6e1f2;
-  --borda-campo: #cfc7e3;
-  --primaria: #5b2fd6;
+  --texto: #231a1f;
+  --discreto: #6a5a63;
+  --borda: #ece3e8;
+  --borda-campo: #d5c6ce;
+  --primaria: #5a1a3c;
   --primaria-texto: #ffffff;
-  --primaria-escura: #4823b0;
-  --primaria-suave: #efeafe;
-  --bloco-fundo: #efeafe;
-  --bloco-borda: #dcd0fd;
-  --bloco-texto: #34187a;
+  --primaria-escura: #431129;
+  --primaria-suave: #f5ebf0;
+  --bloco-fundo: #f5ebf0;
+  --bloco-borda: #e6cdda;
+  --bloco-texto: #4a1431;
   --agora: #e0457b;
-  --destaque: #7650e8;
+  --destaque: #8a3563;
   --sucesso: #1d6b3a;
   --sucesso-fundo: #e5f4ea;
   --erro: #b42344;
   --erro-borda: #f1c4ce;
   --erro-fundo: #fdeef1;
-  --info: #4823b0;
-  --info-fundo: #efeafe;
+  --info: #5a1a3c;
+  --info-fundo: #f5ebf0;
   --foco-campo: #000000;
   --raio: 6px;
   --raio-caixa: 10px;
-  --sombra: 0 1px 2px rgb(28 22 48 / 6%);
+  --sombra: 0 1px 2px rgb(35 26 31 / 6%);
   --fonte-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --fonte-texto: "Figtree", "Segoe UI", system-ui, sans-serif;
-  --largura: 1240px;
+  /* Margem lateral do site: barra superior e conteúdo ocupam a largura toda
+     da janela, com o mesmo respiro dos dois lados. */
+  --margem: clamp(24px, 4vw, 64px);
   color-scheme: light;
 }
 
@@ -93,48 +95,35 @@ a { color: var(--primaria); }
 }
 
 /* ------------------------------------------------------------ barra superior */
-/* O conteúdo fica centralizado em 1240px; o padding lateral faz isso sem
-   precisar de um <div> a mais dentro do <header> de cada página. */
+/* Ocupa a largura toda da janela, alinhada com o conteúdo (--margem).
+   Três colunas: logo | menu | usuário. As laterais têm a mesma largura (1fr),
+   então o menu fica no centro da página, e não só no espaço que sobra. */
 .topo {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.75rem 2rem;
-  min-height: 64px;
-  padding: 0 max(24px, calc((100% - var(--largura)) / 2 + 24px));
+  gap: 0 2.5rem;
+  min-height: 76px;
+  padding: 0 var(--margem);
   background: var(--superficie);
   border-bottom: 1px solid var(--borda);
 }
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  flex: none;
-  font-family: var(--fonte-titulo);
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--texto);
-  text-decoration: none;
-}
-/* Quadrado roxo com três barrinhas (branca, lilás, branca), como blocos de agenda. */
-.marca::before {
-  content: "";
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' rx='8' fill='%235b2fd6'/%3E%3Crect x='7' y='8' width='11' height='3' rx='1.5' fill='%23fff'/%3E%3Crect x='11' y='13.5' width='12' height='3' rx='1.5' fill='%23c4b2fa'/%3E%3Crect x='7' y='19' width='9' height='3' rx='1.5' fill='%23fff'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-#menu { flex: 1; min-width: 0; }
+.marca { justify-self: start; display: block; }
+.marca img { display: block; height: 32px; width: auto; }
+#menu { min-width: 0; }
+/* margin auto (e não justify-content: center) centraliza sem cortar o começo
+   da lista quando ela rola na horizontal, no celular. */
 #menu ul {
   display: flex;
-  gap: 2px;
+  gap: 6px;
+  width: max-content;
   list-style: none;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
 }
 #menu a {
   display: inline-block;
-  padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: var(--raio);
   text-decoration: none;
   white-space: nowrap;
@@ -149,10 +138,10 @@ a { color: var(--primaria); }
   font-weight: 600;
 }
 .usuario-logado {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: none;
 }
 .avatar {
   display: grid;
@@ -172,9 +161,7 @@ a { color: var(--primaria); }
 .usuario-logado .botao-fantasma { margin-left: 6px; min-height: 36px; }
 
 main {
-  max-width: var(--largura);
-  margin: 0 auto;
-  padding: 36px 24px 72px;
+  padding: 44px var(--margem) 80px;
 }
 
 /* ------------------------------------------------------------- formulários */
@@ -214,7 +201,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] {
   margin-top: 0.25rem;
 }
 
-/* Botões. Padrão = secundário (branco, borda, texto roxo). */
+/* Botões. Padrão = secundário (branco, borda, texto vinho). */
 button, a.botao {
   display: inline-flex;
   align-items: center;
@@ -247,7 +234,7 @@ button.perigo {
   color: var(--erro);
 }
 button.perigo:hover { background: var(--erro-fundo); border-color: var(--erro-borda); }
-/* Fantasma: sem borda, fundo lilás no hover. */
+/* Fantasma: sem borda, fundo vinho bem claro no hover. */
 button.botao-fantasma {
   border-color: transparent;
   background: transparent;
@@ -366,7 +353,7 @@ dialog {
   color: var(--texto);
   padding: 1.25rem;
 }
-dialog::backdrop { background: rgb(28 22 48 / 45%); }
+dialog::backdrop { background: rgb(35 26 31 / 45%); }
 
 /* ------------------------------------------------------------------ agenda */
 .agenda-topo {
@@ -381,6 +368,10 @@ dialog::backdrop { background: rgb(28 22 48 / 45%); }
 .agenda-topo p { margin: 0; color: var(--discreto); }
 .agenda-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .agenda-controles input { width: auto; height: 44px; }
+/* Setas de dia anterior / próximo dia, dos dois lados do campo de data. */
+.agenda-dia { display: flex; align-items: center; gap: 6px; }
+button.botao-seta { width: 44px; padding: 0; }
+.botao-seta svg { display: block; }
 
 /* A caixa rola na horizontal; a página não. */
 .agenda-rolavel {
@@ -659,6 +650,38 @@ input[type="checkbox"]:focus { box-shadow: none; }
 .cartao-catalogo { display: flex; flex-direction: column; }
 .cartao-catalogo h2 a { color: inherit; text-decoration: none; }
 .cartao-catalogo h2 a:hover, .cartao-catalogo h2 a:focus-visible { text-decoration: underline; }
+/* Cartões de sala em vinho, com texto branco (catálogo e Reservar). As
+   etiquetas e os botões ficam claros e se destacam sobre o fundo. */
+.cartao.cartao-vinho {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: var(--primaria-texto);
+}
+.cartao.cartao-vinho h2, .cartao.cartao-vinho h3 { color: var(--primaria-texto); }
+.cartao-vinho .discreto { color: #e8cfdc; }
+.cartao-vinho :focus-visible { outline-color: #ffffff; }
+.cartao-vinho a.botao,
+.cartao-vinho button.primario {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--primaria);
+}
+.cartao-vinho a.botao:hover,
+.cartao-vinho button.primario:hover {
+  border-color: var(--primaria-suave);
+  background: var(--primaria-suave);
+  color: var(--primaria-escura);
+}
+/* Livre / ocupada: verde e vermelho claros, que aparecem sobre o vinho. */
+.cartao-vinho.sala-livre { border-left-color: #6fd69a; }
+.cartao-vinho.sala-ocupada { border-left-color: #ff8fa3; }
+.cartao-vinho .livre { color: #a8ecc0; }
+.cartao-vinho .ocupada { color: #ffc2cd; }
+.cartao-vinho .horarios li { border-top-color: rgb(255 255 255 / 20%); }
+/* Reservar sala: o botão fica sempre no canto inferior direito do cartão,
+   na mesma altura em todos os cartões da linha. */
+.cartao-disponibilidade { display: flex; flex-direction: column; }
+.cartao-disponibilidade .botao-reservar { margin-top: auto; align-self: flex-end; }
 
 /* Página de detalhe da sala */
 .detalhe-sala h1 { margin: 0 0 0.75rem; font-size: 30px; letter-spacing: -0.02em; }
@@ -674,33 +697,36 @@ input[type="checkbox"]:focus { box-shadow: none; }
 
 dialog h2 { margin-bottom: 0.25rem; }
 .filtros .acoes { margin-top: 0.75rem; }
-.login-ajuda a { font-weight: 600; }
 
 /* ------------------------------------------------------------------- login */
-/* Duas colunas: destaque roxo-escuro à esquerda, formulário à direita.
+/* Duas colunas: destaque vinho (a cor do fundo do logo) à esquerda, formulário à direita.
    No celular as colunas empilham. */
 .pagina-login {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 55fr 45fr;
 }
 .login-destaque {
   display: flex;
   flex-direction: column;
-  padding: 2rem 3rem;
-  background: #22104a;
+  padding: 2.5rem 3.75rem;
+  background: #5a1a3c; /* a cor do logo */
   color: #ffffff;
 }
+/* Logo horizontal branco; "Reserva de salas" logo abaixo, alinhado com a
+   palavra VERITAS (que começa a 32% da largura da imagem). */
 .login-marca {
+  --largura-logo: 132px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   margin: 0;
-  font-family: var(--fonte-titulo);
-  font-weight: 700;
-  font-size: 18px;
+  font-size: 12px;
+  color: #e8cfdc;
 }
-.logo { flex: none; }
+.login-marca img { display: block; width: var(--largura-logo); height: auto; }
+.login-marca span { margin-left: calc(var(--largura-logo) * 0.32); }
 .login-chamada {
   margin: auto 0;
   max-width: 30rem;
@@ -709,24 +735,25 @@ dialog h2 { margin-bottom: 0.25rem; }
 .login-chamada h2 {
   max-width: 9.5em;
   margin: 0 0 1.25rem;
-  font-size: clamp(2rem, 3.6vw, 2.9rem);
+  font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
-.login-chamada p { margin: 0; color: #c9bcff; font-size: 1rem; }
+.login-chamada p { max-width: 28rem; margin: 0; color: #e8cfdc; font-size: 1rem; }
 
 .login-painel {
   display: grid;
   place-items: center;
   padding: 2rem 1.5rem;
 }
-.login-form { width: min(380px, 100%); }
+.login-form { width: min(420px, 100%); }
 .login-form h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
 .login-form > .discreto { margin: 0 0 1.25rem; font-size: 0.95rem; }
 .login-form label { font-size: 0.9rem; margin-top: 1rem; }
-.login-form input::placeholder { color: #8c82a6; }
+.login-form input::placeholder { color: #7f6d77; }
 .login-form button.primario { margin-top: 1.5rem; }
+.login-dica { margin: 0.6rem 0 0; font-size: 0.8rem; line-height: 1.4; color: var(--discreto); }
 
 /* "Mostrar" dentro do campo de senha. */
 .campo-senha { position: relative; }
@@ -740,7 +767,7 @@ dialog h2 { margin-bottom: 0.25rem; }
   padding: 0 0.65rem;
   border: none;
   background: none;
-  color: var(--primaria);
+  color: var(--texto);
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -751,8 +778,9 @@ dialog h2 { margin-bottom: 0.25rem; }
   padding-top: 1.25rem;
   border-top: 1px solid var(--borda);
   font-size: 0.85rem;
-  color: var(--primaria);
+  color: var(--discreto);
 }
+.login-ajuda a { font-weight: 600; color: var(--primaria); text-decoration: underline; }
 
 /* -------------------------------------------------------------- responsivo */
 @media (max-width: 800px) {
@@ -760,24 +788,33 @@ dialog h2 { margin-bottom: 0.25rem; }
   .login-destaque { padding: 1.5rem 1rem; }
   .login-chamada { padding: 1.5rem 0 0.5rem; }
   .login-painel { place-items: start center; padding: 2rem 1rem; }
+  .login-form { width: min(380px, 100%); }
+}
+
+/* O menu não cabe entre logo e usuário: desce para uma linha própria,
+   ainda centralizado (logo e usuário ficam na 1ª linha). */
+@media (max-width: 1240px) {
+  .topo { grid-template-columns: 1fr auto; gap: 8px 12px; padding-top: 12px; }
+  #menu {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    overflow-x: auto;
+    margin: 0 calc(var(--margem) * -1);
+    padding: 0 var(--margem) 10px;
+  }
 }
 
 @media (max-width: 760px) {
-  /* Barra: marca e avatar na 1ª linha; menu numa linha própria que rola. */
-  .topo { flex-wrap: wrap; padding: 10px 16px 0; gap: 8px 12px; }
-  .usuario-logado { margin-left: auto; }
+  :root { --margem: 16px; }
+  .topo { padding-top: 10px; }
   .usuario-texto { display: none; }
-  #menu {
-    order: 3;
-    flex: 1 1 100%;
-    overflow-x: auto;
-    margin: 0 -16px;
-    padding: 0 16px 8px;
-  }
-  main { padding: 24px 16px 56px; }
+  .marca img { height: 28px; }
+  #menu { padding-bottom: 8px; }
+  main { padding: 24px var(--margem) 56px; }
   .agenda-topo h1 { font-size: 28px; }
   .agenda-controles { width: 100%; }
-  .agenda-controles input { flex: 1; }
+  .agenda-dia { flex: 1 1 100%; }
+  .agenda-controles input { flex: 1; min-width: 0; }
   .agenda { --col-sala: 136px; }
   .agenda-sala { padding: 10px 12px; }
   .agenda-sem-reservas { padding: 32px 16px; }

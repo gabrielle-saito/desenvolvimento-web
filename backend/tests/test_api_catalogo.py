@@ -249,16 +249,16 @@ def test_reservas_com_busca_na_finalidade_e_total(client, colaborador, reservar)
 def test_registro_publico_cria_colaborador_que_consegue_logar(client) -> None:
     r = client.post(
         "/v1/auth/registro",
-        json={"email": " Nova@Empresa.com ", "nome": "Nova Pessoa", "senha": "senha-forte-123"},
+        json={"email": " Nova@Veritas.com ", "nome": "Nova Pessoa", "senha": "senha-forte-123"},
     )
     assert r.status_code == 201
     assert r.headers["Location"] == "/v1/auth/me"
-    assert r.json()["email"] == "nova@empresa.com"
+    assert r.json()["email"] == "nova@veritas.com"
     assert r.json()["papel"] == "colaborador"
     assert "senha" not in r.json() and "hashed_password" not in r.json()
 
     login = client.post(
-        "/v1/auth/login", data={"username": "nova@empresa.com", "password": "senha-forte-123"}
+        "/v1/auth/login", data={"username": "nova@veritas.com", "password": "senha-forte-123"}
     )
     assert login.status_code == 200
 
@@ -268,7 +268,7 @@ def test_registro_nao_aceita_escolher_o_papel(client, db) -> None:
 
     r = client.post(
         "/v1/auth/registro",
-        json={"email": "x@empresa.com", "nome": "X", "senha": "senha-forte-123", "papel": "admin"},
+        json={"email": "x@veritas.com", "nome": "X", "senha": "senha-forte-123", "papel": "admin"},
     )
     assert r.status_code == 422
     assert db.query(User).count() == 0
@@ -286,8 +286,8 @@ def test_registro_com_email_ja_usado_retorna_409(client, colaborador) -> None:
     "corpo",
     [
         {"email": "nao-e-email", "nome": "X", "senha": "senha-forte-123"},
-        {"email": "x@empresa.com", "nome": "X", "senha": "curta"},
-        {"email": "x@empresa.com", "senha": "senha-forte-123"},
+        {"email": "x@veritas.com", "nome": "X", "senha": "curta"},
+        {"email": "x@veritas.com", "senha": "senha-forte-123"},
     ],
 )
 def test_registro_com_dados_invalidos_retorna_422(client, corpo) -> None:
@@ -297,7 +297,7 @@ def test_registro_com_dados_invalidos_retorna_422(client, corpo) -> None:
 def test_registro_fica_na_auditoria_feito_pela_propria_pessoa(client, responsavel) -> None:
     r = client.post(
         "/v1/auth/registro",
-        json={"email": "nova@empresa.com", "nome": "Nova", "senha": "senha-forte-123"},
+        json={"email": "nova@veritas.com", "nome": "Nova", "senha": "senha-forte-123"},
     )
     novo_id = r.json()["id"]
     eventos = client.get(
