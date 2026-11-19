@@ -5,7 +5,7 @@ import EtiquetasRecursos from "./EtiquetasRecursos.jsx";
 // Cartão de uma sala no catálogo. O nome leva à página de detalhe.
 export default function CartaoSala({ sala }) {
   return (
-    <article className="cartao sala cartao-catalogo">
+    <article className="cartao sala cartao-catalogo cartao-vinho">
       <h2>
         <Link to={`/salas/${sala.id}`}>{sala.nome}</Link>
       </h2>

@@ -37,7 +37,7 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], db: DbSession) 
     "username" (o e-mail) e "password" — é o formato do padrão OAuth2.
 
     Exemplo (curl):
-    `curl -X POST /v1/auth/login -d "username=ana@empresa.com&password=senha-demo-123"`
+    `curl -X POST /v1/auth/login -d "username=ste@veritas.com&password=1234"`
 
     Resposta: `{"access_token": "eyJ...", "token_type": "bearer"}`. Envie o
     token nas outras rotas no cabeçalho `Authorization: Bearer <token>`

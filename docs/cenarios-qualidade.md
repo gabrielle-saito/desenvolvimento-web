@@ -54,7 +54,7 @@ salas, e a busca por sobreposição usa o índice GiST criado pela constraint de
 
 **Verificação:** `tests/test_api_reservas.py::test_colaborador_alterando_reserva_alheia_recebe_403_e_responsavel_consegue`
 e `::test_acesso_negado_fica_registrado_na_auditoria`. No Postman, as requisições
-"Bruno cancela reserva da Ana → 403" e "Histórico da reserva (responsável)" mostram o evento.
+"Colega cancela reserva da Ste → 403" e "Histórico da reserva (responsável)" mostram o evento.
 
 ## QA-4 — Disponibilidade da demonstração
 

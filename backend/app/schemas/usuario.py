@@ -16,7 +16,7 @@ class UsuarioCriar(Entrada):
         json_schema_extra={
             "examples": [
                 {
-                    "email": "carla@empresa.com",
+                    "email": "carla@veritas.com",
                     "nome": "Carla Souza",
                     "senha": "uma-senha-forte",
                     "papel": "responsavel",
@@ -44,7 +44,7 @@ class UsuarioRegistro(Entrada):
     model_config = ConfigDict(
         json_schema_extra={
             "examples": [
-                {"email": "daniel@empresa.com", "nome": "Daniel Lima", "senha": "uma-senha-forte"}
+                {"email": "daniel@veritas.com", "nome": "Daniel Lima", "senha": "uma-senha-forte"}
             ]
         }
     )

@@ -59,7 +59,7 @@ export default function Login() {
           rotulo="E-mail"
           type="email"
           autoComplete="username"
-          placeholder="nome@empresa.com.br"
+          placeholder="nome@veritas.com.br"
           autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -72,14 +72,13 @@ export default function Login() {
           onChange={(e) => setSenha(e.target.value)}
           erro={erros.senha}
         />
+        <p className="login-dica">Esqueceu a senha? Peça ao administrador do sistema para redefinir.</p>
         <button type="submit" className="primario largo" disabled={enviando}>
           {enviando ? "Entrando…" : "Entrar"}
         </button>
       </form>
       <p className="login-ajuda">
         Ainda não tem conta? <Link to="/cadastro">Criar conta</Link>
-        <br />
-        Esqueceu a senha? Peça ao administrador do sistema para redefinir.
       </p>
     </LayoutAcesso>
   );

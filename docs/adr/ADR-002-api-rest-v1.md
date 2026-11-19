@@ -36,14 +36,16 @@ Mapa de status:
 | --- | --- |
 | JSON ilegível | 400 |
 | sem token / token inválido / usuário desativado | 401 (+ `WWW-Authenticate: Bearer`) |
-| papel insuficiente; colaborador alterando reserva alheia | 403 |
-| recurso inexistente | 404 |
+| papel insuficiente; colaborador alterando ou cancelando reserva alheia | 403 |
+| recurso inexistente; colaborador abrindo o detalhe de reserva alheia | 404 |
 | horário ocupado, versão desatualizada, nome/e-mail duplicado, reserva cancelada ou já iniciada, sala inativa, admin se rebaixando | 409 |
 | validação do Pydantic (com a lista `erros`) e período inválido | 422 |
 
-**403 e não 404 para reserva alheia.** A base respondia 404 para esconder itens de outras
-pessoas. Aqui a agenda é **pública dentro da empresa** (caso de uso 3), então esconder a
-existência da reserva não protege nada, e o 403 diz a verdade: "existe, mas você não pode".
+**Reserva alheia: 404 para ler, 403 para alterar.** Para um colaborador, a agenda mostra a
+reserva dos outros só como ocupação (o horário está tomado), sem dono nem finalidade. Por isso
+o **detalhe** dela responde **404**, como a base fazia: para ele, esses dados não existem. Já
+**alterar ou cancelar** a reserva de outra pessoa responde **403** e grava o evento
+`reserva.acesso_negado` (cenário QA-3), porque a tentativa interessa à auditoria.
 
 ### Decisões menores registradas (ambiguidades resolvidas pela opção mais simples)
 

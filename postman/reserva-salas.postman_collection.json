@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "bf88fb17-0899-5988-a822-37d920f21ac1",
     "name": "Reserva de Salas — API v1",
-    "description": "Fluxo completo e casos de erro da API de reserva de salas.\n\n1. Suba o ambiente e rode o seed (veja o README).\n2. Selecione o environment \"Reserva de Salas local\" e ajuste admin_email/admin_senha conforme o seu .env.\n3. Rode a collection inteira (Runner) na ordem das pastas 1 → 8.\n\nOs testes de cada requisição conferem status, Problem Details e as regras de negócio.",
+    "description": "Fluxo completo e casos de erro da API de reserva de salas.\n\n1. Suba o ambiente e rode o seed (veja o README).\n2. Selecione o environment \"Reserva de Salas local\" (já vem com as contas do seed: gabi, manu, ste e colaborador @veritas.com, senha 1234).\n3. Rode a collection inteira (Runner) na ordem das pastas 1 → 8.\n\nOs testes de cada requisição conferem status, Problem Details e as regras de negócio.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -104,7 +104,7 @@
                 }
               ]
             },
-            "description": "Formulário OAuth2 (x-www-form-urlencoded). Use o e-mail/senha do SEED_ADMIN_* do seu .env."
+            "description": "Formulário OAuth2 (x-www-form-urlencoded). Conta do seed: gabi@veritas.com, senha 1234."
           },
           "event": [
             {
@@ -120,7 +120,7 @@
           ]
         },
         {
-          "name": "Login responsável (Rita)",
+          "name": "Login responsável (Manu)",
           "request": {
             "method": "POST",
             "header": [],
@@ -143,7 +143,7 @@
               "urlencoded": [
                 {
                   "key": "username",
-                  "value": "rita@empresa.com",
+                  "value": "manu@veritas.com",
                   "type": "text"
                 },
                 {
@@ -168,7 +168,7 @@
           ]
         },
         {
-          "name": "Login colaboradora (Ana)",
+          "name": "Login colaboradora (Ste)",
           "request": {
             "method": "POST",
             "header": [],
@@ -191,7 +191,7 @@
               "urlencoded": [
                 {
                   "key": "username",
-                  "value": "ana@empresa.com",
+                  "value": "ste@veritas.com",
                   "type": "text"
                 },
                 {
@@ -209,14 +209,14 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set(\"token_ana\", pm.response.json().access_token);"
+                  "pm.collectionVariables.set(\"token_ste\", pm.response.json().access_token);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Login colaborador (Bruno)",
+          "name": "Login colaborador (colega)",
           "request": {
             "method": "POST",
             "header": [],
@@ -239,7 +239,7 @@
               "urlencoded": [
                 {
                   "key": "username",
-                  "value": "bruno@empresa.com",
+                  "value": "colaborador@veritas.com",
                   "type": "text"
                 },
                 {
@@ -257,7 +257,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set(\"token_bruno\", pm.response.json().access_token);"
+                  "pm.collectionVariables.set(\"token_colega\", pm.response.json().access_token);"
                 ]
               }
             }
@@ -287,7 +287,7 @@
               "urlencoded": [
                 {
                   "key": "username",
-                  "value": "ana@empresa.com",
+                  "value": "ste@veritas.com",
                   "type": "text"
                 },
                 {
@@ -313,7 +313,7 @@
           ]
         },
         {
-          "name": "Me (Ana)",
+          "name": "Me (Ste)",
           "request": {
             "method": "GET",
             "header": [],
@@ -333,7 +333,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -423,7 +423,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -632,7 +632,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -754,7 +754,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -782,7 +782,7 @@
       "name": "5. Reservas (fluxo completo)",
       "item": [
         {
-          "name": "Criar reserva (Ana) → 201 + Location",
+          "name": "Criar reserva (Ste) → 201 + Location",
           "request": {
             "method": "POST",
             "header": [
@@ -806,7 +806,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -830,7 +830,7 @@
                   "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
                   "pm.test(\"header Location aponta para o recurso criado\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/v1/\" + pm.request.url.path.slice(1).join(\"/\") + \"/\" + pm.response.json().id));",
                   "const r = pm.response.json();",
-                  "pm.test(\"dono vem do token\", () => pm.expect(r.usuario.nome).to.eql(\"Ana Colaboradora\"));",
+                  "pm.test(\"dono vem do token\", () => pm.expect(r.usuario.nome).to.eql(\"Ste\"));",
                   "pm.test(\"versão 1\", () => pm.expect(r.versao).to.eql(1));",
                   "pm.collectionVariables.set(\"reserva_id\", r.id);",
                   "pm.collectionVariables.set(\"reserva_versao\", r.versao);"
@@ -840,7 +840,7 @@
           ]
         },
         {
-          "name": "Reserva sobreposta (Bruno) → 409",
+          "name": "Reserva sobreposta (colega) → 409",
           "request": {
             "method": "POST",
             "header": [
@@ -864,7 +864,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -895,7 +895,7 @@
           ]
         },
         {
-          "name": "Reserva encostada (Bruno) → 201",
+          "name": "Reserva encostada (colega) → 201",
           "request": {
             "method": "POST",
             "header": [
@@ -919,7 +919,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -973,7 +973,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1027,7 +1027,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1082,7 +1082,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1135,7 +1135,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1197,7 +1197,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1219,7 +1219,7 @@
           ]
         },
         {
-          "name": "Bruno edita reserva da Ana → 403",
+          "name": "Colega edita reserva da Ste → 403",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1244,7 +1244,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -1274,7 +1274,7 @@
           ]
         },
         {
-          "name": "Ana edita a própria reserva (com versão)",
+          "name": "Ste edita a própria reserva (com versão)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1299,7 +1299,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1355,7 +1355,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1387,7 +1387,7 @@
           ]
         },
         {
-          "name": "Responsável edita reserva da Ana",
+          "name": "Responsável edita reserva da Ste",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1441,7 +1441,7 @@
           ]
         },
         {
-          "name": "Bruno cancela reserva da Ana → 403",
+          "name": "Colega cancela reserva da Ste → 403",
           "request": {
             "method": "POST",
             "header": [],
@@ -1462,7 +1462,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -1482,7 +1482,7 @@
           ]
         },
         {
-          "name": "Ana cancela a reserva",
+          "name": "Ste cancela a reserva",
           "request": {
             "method": "POST",
             "header": [],
@@ -1503,7 +1503,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1544,7 +1544,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -1564,7 +1564,7 @@
           ]
         },
         {
-          "name": "Horário liberado: Bruno reserva → 201",
+          "name": "Horário liberado: colega reserva → 201",
           "request": {
             "method": "POST",
             "header": [
@@ -1588,7 +1588,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -1610,26 +1610,26 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
-                  "pm.collectionVariables.set(\"reserva_bruno_id\", pm.response.json().id);"
+                  "pm.collectionVariables.set(\"reserva_colega_id\", pm.response.json().id);"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Limpeza: cancelar reserva do Bruno",
+          "name": "Limpeza: cancelar reserva do colega",
           "request": {
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/reservas/{{reserva_bruno_id}}/cancelamento",
+              "raw": "{{base_url}}/v1/reservas/{{reserva_colega_id}}/cancelamento",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
                 "reservas",
-                "{{reserva_bruno_id}}",
+                "{{reserva_colega_id}}",
                 "cancelamento"
               ]
             },
@@ -1638,7 +1638,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -1679,7 +1679,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_bruno}}",
+                  "value": "{{token_colega}}",
                   "type": "string"
                 }
               ]
@@ -1773,7 +1773,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"carla.{{$timestamp}}@empresa.com\",\n  \"nome\": \"Carla Nova\",\n  \"senha\": \"senha-forte-123\"\n}",
+              "raw": "{\n  \"email\": \"carla.{{$timestamp}}@veritas.com\",\n  \"nome\": \"Carla Nova\",\n  \"senha\": \"senha-forte-123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1977,7 +1977,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -2071,7 +2071,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -2152,7 +2152,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -2200,7 +2200,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{token_ana}}",
+                  "value": "{{token_ste}}",
                   "type": "string"
                 }
               ]
@@ -2232,11 +2232,11 @@
       "value": ""
     },
     {
-      "key": "token_ana",
+      "key": "token_ste",
       "value": ""
     },
     {
-      "key": "token_bruno",
+      "key": "token_colega",
       "value": ""
     },
     {
@@ -2272,7 +2272,7 @@
       "value": ""
     },
     {
-      "key": "reserva_bruno_id",
+      "key": "reserva_colega_id",
       "value": ""
     },
     {

@@ -96,23 +96,23 @@ def test_desativar_sala_gera_evento_sala_desativada(client, admin, sala) -> None
 def test_admin_cria_usuario_que_consegue_logar(client, admin) -> None:
     r = client.post(
         "/v1/usuarios",
-        json={"email": "Nova@Empresa.com", "nome": "Nova", "senha": "senha-forte-123"},
+        json={"email": "Nova@Veritas.com", "nome": "Nova", "senha": "senha-forte-123"},
         headers=admin.headers,
     )
     assert r.status_code == 201
     assert r.headers["Location"] == f"/v1/usuarios/{r.json()['id']}"
-    assert r.json()["email"] == "nova@empresa.com"  # normalizado
+    assert r.json()["email"] == "nova@veritas.com"  # normalizado
     assert r.json()["papel"] == "colaborador"  # padrão: menor poder
     assert "senha" not in r.json() and "hashed_password" not in r.json()
 
     login = client.post(
-        "/v1/auth/login", data={"username": "nova@empresa.com", "password": "senha-forte-123"}
+        "/v1/auth/login", data={"username": "nova@veritas.com", "password": "senha-forte-123"}
     )
     assert login.status_code == 200
     me = client.get(
         "/v1/auth/me", headers={"Authorization": f"Bearer {login.json()['access_token']}"}
     ).json()
-    assert me == {"id": r.json()["id"], "nome": "Nova", "email": "nova@empresa.com", "papel": "colaborador"}
+    assert me == {"id": r.json()["id"], "nome": "Nova", "email": "nova@veritas.com", "papel": "colaborador"}
 
 
 def test_email_duplicado_retorna_409(client, admin, colaborador) -> None:

@@ -40,6 +40,22 @@ function quando(reserva) {
   return datas.data(reserva.inicio);
 }
 
+// Setinha (chevron) dos botões de dia anterior / próximo dia.
+function Seta({ direcao }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d={direcao === "esquerda" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function BlocoReserva({ reserva, oitoHoras, minha, selecionada, aoClicar }) {
   const rotulo = reserva.detalhes_ocultos
     ? `Horário reservado, ${periodo(reserva)}, ${reserva.sala.nome}`
@@ -241,7 +257,15 @@ export default function Agenda() {
           <label htmlFor="dia" className="visualmente-oculto">
             Data
           </label>
-          <input id="dia" type="date" required value={dia} onChange={(e) => irPara(e.target.value)} />
+          <div className="agenda-dia">
+            <button type="button" className="botao-seta" aria-label="Dia anterior" onClick={() => irPara(datas.somarDias(dia, -1))}>
+              <Seta direcao="esquerda" />
+            </button>
+            <input id="dia" type="date" required value={dia} onChange={(e) => irPara(e.target.value)} />
+            <button type="button" className="botao-seta" aria-label="Próximo dia" onClick={() => irPara(datas.somarDias(dia, 1))}>
+              <Seta direcao="direita" />
+            </button>
+          </div>
           <button type="button" onClick={() => irPara(datas.hojeEmSaoPaulo())}>
             Hoje
           </button>

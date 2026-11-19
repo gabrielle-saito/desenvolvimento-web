@@ -61,7 +61,7 @@ export default function Cadastro() {
       <Aviso aviso={aviso} />
       <form onSubmit={enviar} noValidate>
         <Campo id="nome" name="nome" rotulo="Nome" autoComplete="name" maxLength={120} autoFocus value={campos.nome} onChange={mudar} erro={erros.nome} />
-        <Campo id="email" name="email" rotulo="E-mail" type="email" autoComplete="email" placeholder="nome@empresa.com.br" value={campos.email} onChange={mudar} erro={erros.email} />
+        <Campo id="email" name="email" rotulo="E-mail" type="email" autoComplete="email" placeholder="nome@veritas.com.br" value={campos.email} onChange={mudar} erro={erros.email} />
         <CampoSenha id="senha" name="senha" autoComplete="new-password" maxLength={128} value={campos.senha} onChange={mudar} erro={erros.senha} />
         <CampoSenha id="confirmacao" name="confirmacao" rotulo="Repita a senha" autoComplete="new-password" value={campos.confirmacao} onChange={mudar} erro={erros.confirmacao} />
         <button type="submit" className="primario largo" disabled={enviando}>

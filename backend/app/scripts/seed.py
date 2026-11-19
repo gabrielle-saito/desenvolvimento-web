@@ -1,29 +1,31 @@
 """Dados de demonstração: python -m app.scripts.seed
 
 Cria (se ainda não existirem):
-  - 1 admin (e-mail e senha das variáveis SEED_ADMIN_EMAIL / SEED_ADMIN_SENHA)
-  - 1 responsável e 2 colaboradores (senha SEED_SENHA_DEMO)
-  - 6 recursos (projetor, TV, videoconferência...)
+  - 4 contas de demonstração, todas com a senha "1234" (ver CONTAS abaixo):
+    gabi (admin), manu (responsável), ste e colaborador (colaboradores)
+  - 5 recursos (projetor, TV, quadro branco...)
   - 15 salas, cada uma ligada aos seus recursos (relação N:N)
-  - 15 reservas para amanhã, para a agenda não começar vazia
+  - reservas espalhadas pelos dias úteis de dezembro/2026 e janeiro/2027,
+    das quatro contas, algumas já canceladas (para o histórico)
+
+As senhas ficam à vista de propósito: é um trabalho acadêmico, e todo o grupo
+precisa entrar com as mesmas contas. Num sistema real elas viriam do .env.
 
 Idempotente: pode rodar várias vezes; o que já existe é mantido.
 Usa os SERVIÇOS (e não INSERT direto): as mesmas regras e a mesma auditoria
 do sistema de verdade valem para os dados da demo.
 """
 
-from datetime import datetime, timedelta
+import random
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import structlog
-from pydantic import EmailStr, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import func, select
 
 from app.db.session import SessionLocal
 from app.dominio.enums import Papel
-from app.dominio.excecoes import ConflitoDeHorario
-from app.infra import relogio
+from app.dominio.excecoes import ConflitoDeHorario, PeriodoInvalido
 from app.infra.logging_config import configurar_logging
 from app.models.recurso import Recurso
 from app.models.reserva import Reserva
@@ -36,19 +38,21 @@ from app.servicos import salas as servico_salas
 from app.servicos import usuarios as servico_usuarios
 
 
-class ConfigSeed(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-    # Obrigatórias: o seed NÃO inventa a senha do admin.
-    seed_admin_email: EmailStr
-    seed_admin_senha: str = Field(min_length=8)
-    seed_senha_demo: str = Field(min_length=8)
+# Contas de demonstração: (e-mail, nome, papel). Todas com a mesma senha.
+# A senha curta só é possível aqui: o seed chama o serviço direto, e o
+# mínimo de 8 caracteres é regra da API (cadastro e criação de usuário).
+SENHA = "1234"
+CONTAS = [
+    ("gabi@veritas.com", "Gabi", Papel.ADMIN),
+    ("manu@veritas.com", "Manu", Papel.RESPONSAVEL),
+    ("ste@veritas.com", "Ste", Papel.COLABORADOR),
+    ("colaborador@veritas.com", "Colaborador", Papel.COLABORADOR),
+]
 
 
 RECURSOS = [
     ("Projetor", "Projetor Full HD com entrada HDMI"),
     ("TV", "TV de 55\" para apresentar pelo notebook"),
-    ("Videoconferência", "Câmera, microfone de mesa e caixa de som"),
     ("Quadro branco", None),
     ("Sistema de som", "Microfones sem fio e caixas de som"),
     ("Ar-condicionado", None),
@@ -59,18 +63,18 @@ SALAS = [
     ("Sala Azul", 6, "2º andar", "TV 55\" e quadro branco", ["TV", "Quadro branco", "Ar-condicionado"]),
     ("Sala Verde", 4, "2º andar", "Ideal para 1:1 e entrevistas", ["Quadro branco"]),
     ("Auditório", 40, "Térreo", "Projetor e sistema de som", ["Projetor", "Sistema de som", "Ar-condicionado"]),
-    ("Sala Laranja", 10, "3º andar", "Videoconferência", ["Videoconferência", "TV", "Ar-condicionado"]),
+    ("Sala Laranja", 10, "3º andar", "TV para apresentações", ["TV", "Ar-condicionado"]),
     ("Sala Amarela", 8, "3º andar", "Mesa redonda", ["Projetor", "Quadro branco"]),
-    ("Sala Roxa", 12, "4º andar", "Boa para workshops", ["Projetor", "Videoconferência", "Ar-condicionado"]),
+    ("Sala Roxa", 12, "4º andar", "Boa para workshops", ["Projetor", "Ar-condicionado"]),
     ("Sala Vermelha", 6, "2º andar", None, ["TV", "Quadro branco"]),
     ("Sala Rosa", 6, "4º andar", None, ["TV"]),
-    ("Sala Cinza", 2, "1º andar", "Para conversas rápidas", ["Videoconferência"]),
+    ("Sala Cinza", 2, "1º andar", "Para conversas rápidas", []),
     ("Sala Branca", 4, "5º andar", "Sala simples, sem equipamentos", []),
     ("Sala de Treinamento", 20, "Térreo", "Carteiras e bancadas", ["Projetor", "Quadro branco", "Sistema de som", "Ar-condicionado"]),
-    ("Sala do Conselho", 14, "5º andar", "Mesa grande de reunião", ["Videoconferência", "TV", "Ar-condicionado"]),
+    ("Sala do Conselho", 14, "5º andar", "Mesa grande de reunião", ["TV", "Ar-condicionado"]),
     ("Espaço Criativo", 8, "3º andar", "Paredes de quadro branco e pufes", ["Quadro branco", "TV"]),
-    ("Cabine 1", 1, "1º andar", "Cabine individual para chamadas", ["Videoconferência"]),
-    ("Cabine 2", 1, "1º andar", "Cabine individual para chamadas", ["Videoconferência"]),
+    ("Cabine 1", 1, "1º andar", "Cabine individual para chamadas", []),
+    ("Cabine 2", 1, "1º andar", "Cabine individual para chamadas", []),
 ]
 
 FUSO = ZoneInfo("America/Sao_Paulo")
@@ -86,20 +90,72 @@ def _usuario(db, ator, email: str, nome: str, senha: str, papel: Papel) -> User:
     return servico_usuarios.criar(db, ator, email=email, nome=nome, senha=senha, papel=papel)
 
 
+# Reservas de demonstração: dias úteis de dezembro/2026 e janeiro/2027,
+# menos véspera e dia de Natal, véspera e dia de Ano-Novo.
+PERIODO = (date(2026, 12, 1), date(2027, 1, 29))
+SEM_EXPEDIENTE = {date(2026, 12, 24), date(2026, 12, 25), date(2026, 12, 31), date(2027, 1, 1)}
+HORARIOS = [((8, 30), (9, 30)), ((10, 0), (11, 0)), ((11, 0), (12, 0)), ((14, 0), (15, 30)), ((16, 0), (17, 0))]
+FINALIDADES = [
+    "Daily do time de produto", "Revisão de código", "Planejamento da sprint",
+    "Reunião com cliente", "Entrevista de candidato", "Treinamento interno",
+    "Alinhamento semanal", "Apresentação de resultados", "Workshop de UX",
+    "Revisão de arquitetura", "1:1 com a liderança", "Brainstorm de produto",
+    "Reunião de diretoria", "Onboarding de novos colaboradores", "Retrospectiva",
+]
+# Uma em cada CANCELAR_A_CADA reservas é cancelada pelo próprio dono.
+CANCELAR_A_CADA = 9  # sem divisor comum com 4 (contas): as canceladas se dividem entre todas
+
+
+def _dias_uteis():
+    dia, fim = PERIODO
+    while dia <= fim:
+        if dia.weekday() < 5 and dia not in SEM_EXPEDIENTE:
+            yield dia
+        dia += timedelta(days=1)
+
+
+def _reservas_de_demonstracao(db, donos: list[User], salas: dict[str, Sala]) -> None:
+    # Sorteio com semente fixa: todo mundo do grupo recebe exatamente as
+    # mesmas reservas. Salas diferentes no mesmo dia: nunca há choque.
+    sorteio = random.Random(2026)
+    # Fora do sorteio: as cabines (1 pessoa, não são sala de reunião) e a
+    # Sala Laranja, que a collection do Postman reserva daqui a 3 dias às 16h.
+    pool = [s for nome, s in salas.items() if not nome.startswith("Cabine") and nome != "Sala Laranja"]
+    n = 0
+    for dia in _dias_uteis():
+        quantas = sorteio.choice([2, 3, 3, 4])
+        for (h_ini, h_fim), sala in zip(
+            sorteio.sample(HORARIOS, quantas), sorteio.sample(pool, quantas), strict=True
+        ):
+            dono = donos[n % len(donos)]
+            inicio = datetime.combine(dia, datetime.min.time(), FUSO).replace(hour=h_ini[0], minute=h_ini[1])
+            fim = inicio.replace(hour=h_fim[0], minute=h_fim[1])
+            finalidade = sorteio.choice(FINALIDADES)
+            n += 1
+            try:
+                reserva = servico_reservas.criar(
+                    db, dono, sala_id=sala.id, inicio=inicio, fim=fim, finalidade=finalidade
+                )
+            except (ConflitoDeHorario, PeriodoInvalido) as erro:
+                # PeriodoInvalido: a data já passou (seed rodado depois de jan/2027).
+                log.info("seed.reserva_ignorada", sala=sala.nome, inicio=inicio.isoformat(), motivo=str(erro))
+                continue
+            if n % CANCELAR_A_CADA == 0:
+                servico_reservas.cancelar(db, dono, reserva.id)
+
+
 def main() -> None:
     # Mesmo formato de log da API (JSON). Cada criação já gera o seu evento
     # (usuario.criado, sala.criada, reserva.criada) dentro dos serviços.
     configurar_logging()
-    cfg = ConfigSeed()
     db = SessionLocal()
     try:
-        senha = cfg.seed_senha_demo
-        admin = _usuario(
-            db, None, cfg.seed_admin_email.lower(), "Administradora", cfg.seed_admin_senha, Papel.ADMIN
-        )
-        rita = _usuario(db, admin, "rita@empresa.com", "Rita Responsável", senha, Papel.RESPONSAVEL)
-        ana = _usuario(db, admin, "ana@empresa.com", "Ana Colaboradora", senha, Papel.COLABORADOR)
-        bruno = _usuario(db, admin, "bruno@empresa.com", "Bruno Colaborador", senha, Papel.COLABORADOR)
+        # A primeira conta (admin) é criada sem ator; ela cria as demais.
+        contas: list[User] = []
+        for email, nome, papel in CONTAS:
+            ator = contas[0] if contas else None
+            contas.append(_usuario(db, ator, email, nome, SENHA, papel))
+        admin = contas[0]
 
         recursos: dict[str, Recurso] = {}
         for nome, descricao in RECURSOS:
@@ -126,45 +182,11 @@ def main() -> None:
                 log.info("seed.sala_ja_existe", nome=nome)
             salas[nome] = sala
 
-        # Reservas de exemplo para amanhã, só se o banco ainda não tiver nenhuma.
+        # Reservas só se o banco ainda não tiver nenhuma.
         if db.scalar(select(func.count()).select_from(Reserva)):
             log.info("seed.reservas_ja_existem")
             return
-        amanha = (relogio.agora().astimezone(FUSO) + timedelta(days=1)).date()
-
-        def em(hora: int, minuto: int = 0) -> datetime:
-            return datetime(amanha.year, amanha.month, amanha.day, hora, minuto, tzinfo=FUSO)
-
-        exemplos = [
-            (ana, "Sala Azul", em(9), em(10), "Daily do time de produto"),
-            (bruno, "Sala Azul", em(10), em(11), "Revisão de código"),  # encostada na anterior
-            (rita, "Auditório", em(14), em(16), "Treinamento de integração"),
-            (bruno, "Sala Verde", em(15), em(15, 30), "Entrevista"),
-            # Mais reservas da Ana: quem entra com ela vê "Suas reservas" na agenda.
-            (ana, "Sala Laranja", em(13), em(14), "Planejamento da sprint"),
-            (ana, "Auditório", em(16, 30), em(17, 30), "Apresentação de resultados"),
-            (ana, "Cabine 1", em(11), em(11, 30), "Ligação com fornecedor"),
-            (ana, "Sala Verde", em(17), em(18), "1:1 com a liderança"),
-            (rita, "Sala de Treinamento", em(8, 30), em(12), "Onboarding de novos colaboradores"),
-            (rita, "Sala do Conselho", em(9), em(11), "Reunião de diretoria"),
-            (rita, "Sala Laranja", em(15), em(16), "Call com cliente"),
-            (bruno, "Sala Roxa", em(10, 30), em(12), "Workshop de UX"),
-            (bruno, "Sala Amarela", em(14), em(15), "Revisão de arquitetura"),
-            (bruno, "Espaço Criativo", em(16), em(17, 30), "Brainstorm de produto"),
-            (admin, "Sala Vermelha", em(10), em(10, 30), "Entrevista de candidato"),
-        ]
-        for dono, sala_nome, inicio, fim, finalidade in exemplos:
-            try:
-                servico_reservas.criar(
-                    db,
-                    dono,
-                    sala_id=salas[sala_nome].id,
-                    inicio=inicio,
-                    fim=fim,
-                    finalidade=finalidade,
-                )
-            except ConflitoDeHorario:
-                log.info("seed.horario_ja_ocupado", sala=sala_nome, inicio=inicio.isoformat())
+        _reservas_de_demonstracao(db, contas, salas)
     finally:
         db.close()
         log.info("seed.concluido")
