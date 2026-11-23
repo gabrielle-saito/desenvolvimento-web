@@ -1,15 +1,15 @@
 """Dados de demonstração: python -m app.scripts.seed
 
 Cria (se ainda não existirem):
-  - 4 contas de demonstração, todas com a senha "1234" (ver CONTAS abaixo):
+  - 4 contas de demonstração, todas com a senha da variável SEED_SENHA (.env):
     gabi (admin), manu (responsável), ste e colaborador (colaboradores)
   - 5 recursos (projetor, TV, quadro branco...)
   - 15 salas, cada uma ligada aos seus recursos (relação N:N)
   - reservas espalhadas pelos dias úteis de novembro/2026 a janeiro/2027,
     das quatro contas, algumas já canceladas (para o histórico)
 
-As senhas ficam à vista de propósito: é um trabalho acadêmico, e todo o grupo
-precisa entrar com as mesmas contas. Num sistema real elas viriam do .env.
+A senha NÃO fica no código: vem de SEED_SENHA (o .env.example sugere um valor,
+para todo o grupo entrar com as mesmas contas). Sem ela, o seed não roda.
 
 Idempotente: pode rodar várias vezes; o que já existe é mantido.
 Usa os SERVIÇOS (e não INSERT direto): as mesmas regras e a mesma auditoria
@@ -21,6 +21,8 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import structlog
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import func, select
 
 from app.db.session import SessionLocal
@@ -38,10 +40,16 @@ from app.servicos import salas as servico_salas
 from app.servicos import usuarios as servico_usuarios
 
 
-# Contas de demonstração: (e-mail, nome, papel). Todas com a mesma senha.
-# A senha curta só é possível aqui: o seed chama o serviço direto, e o
-# mínimo de 8 caracteres é regra da API (cadastro e criação de usuário).
-SENHA = "1234"
+class ConfigSeed(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Obrigatória e sem valor padrão: o seed NÃO inventa senha.
+    # Uma senha curta só é possível aqui: o seed chama o serviço direto, e o
+    # mínimo de 8 caracteres é regra da API (cadastro e criação de usuário).
+    seed_senha: str = Field(min_length=1)
+
+
+# Contas de demonstração: (e-mail, nome, papel). Todas com a senha SEED_SENHA.
 CONTAS = [
     ("gabi@veritas.com", "Gabi", Papel.ADMIN),
     ("manu@veritas.com", "Manu", Papel.RESPONSAVEL),
@@ -152,13 +160,14 @@ def main() -> None:
     # Mesmo formato de log da API (JSON). Cada criação já gera o seu evento
     # (usuario.criado, sala.criada, reserva.criada) dentro dos serviços.
     configurar_logging()
+    senha = ConfigSeed().seed_senha
     db = SessionLocal()
     try:
         # A primeira conta (admin) é criada sem ator; ela cria as demais.
         contas: list[User] = []
         for email, nome, papel in CONTAS:
             ator = contas[0] if contas else None
-            contas.append(_usuario(db, ator, email, nome, SENHA, papel))
+            contas.append(_usuario(db, ator, email, nome, senha, papel))
         admin = contas[0]
 
         recursos: dict[str, Recurso] = {}

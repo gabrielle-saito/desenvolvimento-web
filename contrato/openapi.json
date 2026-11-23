@@ -1429,7 +1429,7 @@
     },
     "/v1/auth/login": {
       "post": {
-        "description": "Recebe application/x-www-form-urlencoded com os campos\n\"username\" (o e-mail) e \"password\" — é o formato do padrão OAuth2.\n\nExemplo (curl):\n`curl -X POST /v1/auth/login -d \"username=ste@veritas.com&password=1234\"`\n\nResposta: `{\"access_token\": \"eyJ...\", \"token_type\": \"bearer\"}`. Envie o\ntoken nas outras rotas no cabeçalho `Authorization: Bearer <token>`\n(no Swagger: botão **Authorize**).",
+        "description": "Recebe application/x-www-form-urlencoded com os campos\n\"username\" (o e-mail) e \"password\" — é o formato do padrão OAuth2.\n\nExemplo (curl):\n`curl -X POST /v1/auth/login -d \"username=ste@veritas.com&password=SUA_SENHA\"`\n\nResposta: `{\"access_token\": \"eyJ...\", \"token_type\": \"bearer\"}`. Envie o\ntoken nas outras rotas no cabeçalho `Authorization: Bearer <token>`\n(no Swagger: botão **Authorize**).",
         "operationId": "login_v1_auth_login_post",
         "requestBody": {
           "content": {
