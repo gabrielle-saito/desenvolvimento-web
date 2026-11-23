@@ -3,6 +3,7 @@
 N usuários simultâneos consultam GET /v1/disponibilidade; mede p50/p95/p99.
 Uso (com o ambiente no ar e o seed aplicado):
   docker compose exec api python -m app.scripts.carga_disponibilidade
+Usa a conta ste@veritas.com, com a senha de SEED_SENHA (já vem do .env no container).
 Variáveis opcionais: CARGA_USUARIOS (30), CARGA_REQUISICOES (20 por usuário),
 CARGA_URL (http://localhost:8000).
 """
@@ -21,7 +22,7 @@ def main() -> None:
     por_usuario = int(os.environ.get("CARGA_REQUISICOES", "20"))
     login = httpx.post(
         f"{base}/v1/auth/login",
-        data={"username": "ste@veritas.com", "password": "1234"},  # conta do seed
+        data={"username": "ste@veritas.com", "password": os.environ["SEED_SENHA"]},  # conta do seed
     )
     login.raise_for_status()
     token = login.json()["access_token"]

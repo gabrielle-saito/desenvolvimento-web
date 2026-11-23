@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "bf88fb17-0899-5988-a822-37d920f21ac1",
     "name": "Reserva de Salas — API v1",
-    "description": "Fluxo completo e casos de erro da API de reserva de salas.\n\n1. Suba o ambiente e rode o seed (veja o README).\n2. Selecione o environment \"Reserva de Salas local\" (já vem com as contas do seed: gabi, manu, ste e colaborador @veritas.com, senha 1234).\n3. Rode a collection inteira (Runner) na ordem das pastas 1 → 8.\n\nOs testes de cada requisição conferem status, Problem Details e as regras de negócio.",
+    "description": "Fluxo completo e casos de erro da API de reserva de salas.\n\n1. Suba o ambiente e rode o seed (veja o README).\n2. Selecione o environment \"Reserva de Salas local\" e preencha admin_senha e senha_demo com o valor de SEED_SENHA do seu .env (contas do seed: gabi, manu, ste e colaborador @veritas.com).\n3. Rode a collection inteira (Runner) na ordem das pastas 1 → 8.\n\nOs testes de cada requisição conferem status, Problem Details e as regras de negócio.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -104,7 +104,7 @@
                 }
               ]
             },
-            "description": "Formulário OAuth2 (x-www-form-urlencoded). Conta do seed: gabi@veritas.com, senha 1234."
+            "description": "Formulário OAuth2 (x-www-form-urlencoded). Conta do seed: gabi@veritas.com, senha = SEED_SENHA do .env."
           },
           "event": [
             {

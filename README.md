@@ -79,16 +79,17 @@ Docker Compose, então não há `npm install` nem dependências Node.
 
 ### Contas de demonstração
 
-O seed cria quatro contas: um admin, um responsável e dois colaboradores. Todas têm a senha **`1234`**. As senhas ficam à vista
-de propósito: é um trabalho acadêmico, e todo o grupo entra com as mesmas contas. A senha curta
-só existe no seed; pela API, o cadastro e a criação de usuário exigem no mínimo 8 caracteres.
+O seed cria quatro contas: um admin, um responsável e dois colaboradores. Todas usam a senha
+da variável **`SEED_SENHA`** do `.env`, que no `.env.example` vem como **`1234`**: assim todo o
+grupo entra com as mesmas contas, e a senha não fica no código-fonte. A senha curta só existe no
+seed; pela API, o cadastro e a criação de usuário exigem no mínimo 8 caracteres.
 
 | E-mail | Nome | Papel | Senha |
 | --- | --- | --- | --- |
-| `gabi@veritas.com` | Gabi | admin | `1234` |
-| `manu@veritas.com` | Manu | responsável | `1234` |
-| `ste@veritas.com` | Ste | colaborador | `1234` |
-| `colaborador@veritas.com` | Colaborador | colaborador | `1234` |
+| `gabi@veritas.com` | Gabi | admin | `SEED_SENHA` |
+| `manu@veritas.com` | Manu | responsável | `SEED_SENHA` |
+| `ste@veritas.com` | Ste | colaborador | `SEED_SENHA` |
+| `colaborador@veritas.com` | Colaborador | colaborador | `SEED_SENHA` |
 
 O seed também cria **5 recursos** (projetor, TV, quadro branco, sistema de som,
 ar-condicionado), **15 salas** ligadas aos seus recursos e **reservas das quatro contas
@@ -209,7 +210,8 @@ O 422 de validação traz `"erros": [{"campo": "inicio", "local": "body", "mensa
 ## Postman
 
 Importe os dois arquivos de [`postman/`](postman/) e selecione o environment
-**Reserva de Salas local** (já vem com as contas do seed) e rode a collection inteira no Runner. São 44 requisições e 94 testes: o fluxo completo e os
+**Reserva de Salas local**. Preencha `admin_senha` e `senha_demo` com o valor de `SEED_SENHA`
+do seu `.env` e rode a collection inteira no Runner. São 44 requisições e 94 testes: o fluxo completo e os
 casos de erro. A collection limpa as próprias reservas no fim, então pode rodar de novo.
 
 ## Observabilidade e auditoria
