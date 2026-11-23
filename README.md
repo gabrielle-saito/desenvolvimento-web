@@ -92,7 +92,7 @@ só existe no seed; pela API, o cadastro e a criação de usuário exigem no mí
 
 O seed também cria **5 recursos** (projetor, TV, quadro branco, sistema de som,
 ar-condicionado), **15 salas** ligadas aos seus recursos e **reservas das quatro contas
-espalhadas pelos dias úteis de dezembro/2026 e janeiro/2027** (sem 24, 25 e 31/12 e 1º/1),
+espalhadas pelos dias úteis de novembro/2026 a janeiro/2027** (sem 2 e 20/11, 24, 25 e 31/12 e 1º/1),
 algumas já canceladas para aparecer o histórico. As reservas saem sempre iguais em qualquer
 computador e só são criadas se o banco ainda não tiver nenhuma; datas que já passaram são puladas.
 

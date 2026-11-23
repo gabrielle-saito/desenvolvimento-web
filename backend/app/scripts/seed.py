@@ -5,7 +5,7 @@ Cria (se ainda não existirem):
     gabi (admin), manu (responsável), ste e colaborador (colaboradores)
   - 5 recursos (projetor, TV, quadro branco...)
   - 15 salas, cada uma ligada aos seus recursos (relação N:N)
-  - reservas espalhadas pelos dias úteis de dezembro/2026 e janeiro/2027,
+  - reservas espalhadas pelos dias úteis de novembro/2026 a janeiro/2027,
     das quatro contas, algumas já canceladas (para o histórico)
 
 As senhas ficam à vista de propósito: é um trabalho acadêmico, e todo o grupo
@@ -90,10 +90,14 @@ def _usuario(db, ator, email: str, nome: str, senha: str, papel: Papel) -> User:
     return servico_usuarios.criar(db, ator, email=email, nome=nome, senha=senha, papel=papel)
 
 
-# Reservas de demonstração: dias úteis de dezembro/2026 e janeiro/2027,
-# menos véspera e dia de Natal, véspera e dia de Ano-Novo.
-PERIODO = (date(2026, 12, 1), date(2027, 1, 29))
-SEM_EXPEDIENTE = {date(2026, 12, 24), date(2026, 12, 25), date(2026, 12, 31), date(2027, 1, 1)}
+# Reservas de demonstração: dias úteis de novembro/2026 a janeiro/2027, menos
+# Finados, Consciência Negra, véspera e dia de Natal, véspera e dia de Ano-Novo.
+# Dias que já passaram são pulados (a API não aceita reserva no passado).
+PERIODO = (date(2026, 11, 1), date(2027, 1, 29))
+SEM_EXPEDIENTE = {
+    date(2026, 11, 2), date(2026, 11, 20),
+    date(2026, 12, 24), date(2026, 12, 25), date(2026, 12, 31), date(2027, 1, 1),
+}
 HORARIOS = [((8, 30), (9, 30)), ((10, 0), (11, 0)), ((11, 0), (12, 0)), ((14, 0), (15, 30)), ((16, 0), (17, 0))]
 FINALIDADES = [
     "Daily do time de produto", "Revisão de código", "Planejamento da sprint",
